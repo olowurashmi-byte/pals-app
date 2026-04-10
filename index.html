@@ -222,4 +222,141 @@
 
         'NRP_OHCA': [
             { name: 'Epinephrine (1:10,000) 💉 優先', doseFormula: w => w * 0.02, volFormula: w => w * 0.2, max: 99, route: 'IV/IO', note: '👉 準備 1cc空針。⚡ 抽 0.1cc EPI 再抽 0.9cc N/S，給予 0.2cc/kg 的量。' },
-            { name: 'Epinephrine (1:10,000) ⚠️ 替代', doseFormula: w
+            { name: 'Epinephrine (1:10,000) ⚠️ 替代', doseFormula: w => w * 0.1, volFormula: w => w * 1.0, max: 99, route: 'ET (管內)', note: '👉 10cc空針。⚡ 抽 1cc EPI 再抽 9cc N/S，給予 1cc/kg 的量。' }
+        ]
+    };
+
+    function initNrpWeights() {
+        let grid = document.getElementById('nrpWeightGrid');
+        let html = '';
+        for(let w = 2.0; w <= 4.45; w += 0.1) {
+            let weightStr = (Math.round(w * 10) / 10).toFixed(1);
+            html += `<button class="weight-btn" onclick="selectNrpWeight(${weightStr}, this)">${weightStr}</button>`;
+        }
+        grid.innerHTML = html;
+    }
+    initNrpWeights();
+
+    function switchTab(sectionId, btnElement) {
+        document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+        btnElement.classList.add('active');
+        document.getElementById('resultBox').style.display = 'none';
+        document.getElementById('resultBoxNrp').style.display = 'none';
+        document.querySelectorAll('.weight-btn').forEach(b => b.classList.remove('selected'));
+    }
+
+    function selectNrpWeight(weight, btnElement) {
+        document.querySelectorAll('.weight-btn').forEach(b => b.classList.remove('selected'));
+        btnElement.classList.add('selected');
+        renderNRP('NRP_OHCA', weight);
+        document.getElementById('resultBoxNrp').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function calculatePals(conditionKey) {
+        const weight = parseFloat(document.getElementById('weightInputPals').value);
+        if (!weight || weight <= 0) {
+            alert('請先輸入正確的孩童體重！');
+            return;
+        }
+        
+        // 抓取目前選取的年齡區間 (under4 或是 over4)
+        const ageGroup = document.querySelector('input[name="ageGroupPals"]:checked').value;
+        
+        renderPALS(conditionKey, weight, ageGroup);
+    }
+
+    function renderNRP(conditionKey, weight) {
+        const resultBox = document.getElementById('resultBoxNrp');
+        const resultContent = document.getElementById('resultContentNrp');
+        document.getElementById('resultTitleNrp').innerText = `👶 新生兒 NRP | 體重: ${weight} kg`;
+        
+        let html = '';
+        drugData[conditionKey].forEach(function(drug) {
+            let doseHtml = `<span class="drug-dose">${Math.round(drug.doseFormula(weight) * 1000) / 1000} mg</span>`;
+            let volHtml = `<span class="drug-vol">${Math.round(drug.volFormula(weight) * 100) / 100} cc</span>`;
+            html += `<div class="drug-item">
+                <div class="drug-name">${drug.name}</div>
+                <div>途徑: ${drug.route} | 應抽劑量: ${doseHtml} | 體積: ${volHtml}</div>
+                <div class="drug-note">${drug.note}</div>
+            </div>`;
+        });
+        resultContent.innerHTML = html;
+        resultBox.style.display = 'block';
+    }
+
+    // 傳入 ageGroup 參數，用來動態判斷上限
+    function renderPALS(conditionKey, weight, ageGroup) {
+        const resultBox = document.getElementById('resultBox');
+        const resultContent = document.getElementById('resultContent');
+        const data = drugData[conditionKey];
+        
+        let ageText = ageGroup === 'under4' ? '(< 4歲)' : '(≥ 4歲)';
+        document.getElementById('resultTitle').innerText = `👦 狀況：${conditionKey.replace('OHCA_', 'OHCA ')} | 體重: ${weight} kg ${ageText}`;
+        
+        let html = '';
+
+        if (data.isAdvanced) {
+            html += `<div class="drug-item" style="border-left-color: #e91e63;">
+                <div class="drug-name">🫀 CPR 指引</div>
+                <ul class="cpr-list">
+                    <li><b>姿勢：</b>${data.cpr.posture}</li>
+                    <li><b>深度：</b>${data.cpr.depth}</li>
+                    <li><b>AED：</b>${data.cpr.aed}</li>
+                    <li><b>比例：</b>${data.cpr.ratio}</li>
+                </ul>
+            </div>`;
+            html += `<div class="drug-item" style="border-left-color: #ff9800;">
+                <div class="drug-name">⚡ 電擊 (2J / 4J / Max 10J)</div>
+                <div>首發: <span class="drug-dose">${weight * 2} J</span> | 次發: <span class="drug-dose">${weight * 4} J</span> | 最大: <span class="drug-dose">${Math.min(weight * 10, 200)} J</span></div>
+            </div>`;
+            let lma = getLMA(weight);
+            html += `<div class="drug-item" style="border-left-color: #9c27b0;">
+                <div class="drug-name">🌬️ LMA 型號判斷</div>
+                <div>建議: <span class="drug-dose" style="color:#9c27b0;">Size ${lma.size}</span> (充氣 ${lma.cuff} cc)</div>
+                <div class="drug-note">置入後通氣速率: <b>2~3秒/一口氣</b></div>
+            </div>`;
+        }
+
+        const drugsToRender = data.isAdvanced ? data.drugs : (data.drugs || data);
+        drugsToRender.forEach(function(drug) {
+            let dose = drug.doseFormula(weight);
+            let currentMax = null;
+
+            // 判斷 max 是一個固定數值，還是一個需要傳入年齡判斷的函數
+            if (typeof drug.max === 'function') {
+                currentMax = drug.max(ageGroup);
+            } else {
+                currentMax = drug.max;
+            }
+
+            // 防呆機制：若計算劑量大於上限，強制鎖死在上限
+            if (currentMax !== null && dose > currentMax) {
+                dose = currentMax;
+            }
+            
+            let doseHtml = `<span class="drug-dose">${Math.round(dose * 1000) / 1000} mg</span>`;
+            
+            // 如果超過上限，顯示紅色警告字樣提醒使用者
+            if (currentMax !== null && dose === currentMax && drug.doseFormula(weight) > currentMax) {
+                doseHtml += ` <span style="color:red; font-size:12px; font-weight:bold;">(已達最大上限 ${currentMax}mg)</span>`;
+            }
+
+            let volHtml = drug.volFormula ? `<br>體積: <span class="drug-vol">${Math.round(drug.volFormula(weight) * 100) / 100} cc</span>` : '';
+
+            html += `<div class="drug-item">
+                <div class="drug-name">💊 ${drug.name}</div>
+                <div>途徑: <b>${drug.route}</b></div>
+                <div style="margin-top: 5px; background: #f5f5f5; padding: 8px; border-radius: 6px;">應給劑量: ${doseHtml} ${volHtml}</div>
+                <div class="drug-note">${drug.note}</div>
+            </div>`;
+        });
+
+        resultContent.innerHTML = html;
+        resultBox.style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
