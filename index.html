@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PH-PLS 金刀板</title>
     <style>
-        /* 背景採用柔和且具生動感的藍綠漸層 */
         body { 
             font-family: 'Helvetica Neue', Arial, Microsoft JhengHei, sans-serif; 
             padding: 15px; 
@@ -35,15 +34,13 @@
         .section.active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        label { font-size: 16px; font-weight: bold; display: block; margin-bottom: 10px; color: #37474f;}
-        input[type="number"] { width: 100%; padding: 15px; font-size: 22px; border: 2px solid #b0bec5; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; text-align: center; background-color: #fafafa; transition: 0.3s;}
-        input[type="number"]:focus { border-color: #1976d2; outline: none; background-color: #fff; box-shadow: 0 0 8px rgba(25,118,210,0.2);}
-        
-        /* 年齡選擇按鈕樣式 */
-        .age-toggle { display: flex; gap: 10px; margin-bottom: 15px; }
-        .age-toggle input[type="radio"] { display: none; }
-        .age-btn { flex: 1; padding: 12px; text-align: center; background: #eceff1; border: 2px solid #cfd8dc; border-radius: 8px; font-size: 16px; font-weight: bold; color: #546e7a; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
-        .age-toggle input[type="radio"]:checked + .age-btn { background: #e3f2fd; border-color: #1e88e5; color: #1565c0; transform: scale(1.02); box-shadow: 0 4px 8px rgba(30,136,229,0.2);}
+        /* 雙輸入框並排設計 */
+        .input-group { display: flex; gap: 15px; margin-bottom: 15px; }
+        .input-field { flex: 1; }
+        .input-field label { font-size: 15px; font-weight: bold; display: block; margin-bottom: 8px; color: #37474f; }
+        .input-field input { width: 100%; padding: 15px; font-size: 22px; border: 2px solid #b0bec5; border-radius: 8px; box-sizing: border-box; text-align: center; background-color: #fafafa; transition: 0.3s; }
+        .input-field input:focus { border-color: #1976d2; outline: none; background-color: #fff; box-shadow: 0 0 8px rgba(25,118,210,0.2); }
+        .input-hint { font-size: 12px; color: #78909c; text-align: center; margin-top: 4px; }
 
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
         button.action-btn { padding: 14px 10px; font-size: 16px; font-weight: bold; color: white; background: linear-gradient(145deg, #546e7a, #37474f); border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s;}
@@ -95,16 +92,16 @@
 
     <div id="palsSection" class="section active">
         
-        <label for="weightInputPals">請輸入孩童體重 (kg)：</label>
-        <input type="number" id="weightInputPals" placeholder="例如: 10 或 40" inputmode="decimal">
-
-        <label>請選擇孩童年齡區間：</label>
-        <div class="age-toggle">
-            <input type="radio" id="ageUnder4" name="ageGroupPals" value="under4" checked>
-            <label for="ageUnder4" class="age-btn">👶 &lt; 4 歲</label>
-            
-            <input type="radio" id="ageOver4" name="ageGroupPals" value="over4">
-            <label for="ageOver4" class="age-btn">👦 ≥ 4 歲</label>
+        <div class="input-group">
+            <div class="input-field">
+                <label for="weightInputPals">孩童體重 (kg)</label>
+                <input type="number" id="weightInputPals" placeholder="例如: 15" inputmode="decimal">
+            </div>
+            <div class="input-field">
+                <label for="ageInputPals">孩童年齡 (歲)</label>
+                <input type="number" id="ageInputPals" placeholder="例如: 3" inputmode="decimal">
+                <div class="input-hint">(未滿 1 歲請輸入 0)</div>
+            </div>
         </div>
 
         <div class="btn-grid">
@@ -194,15 +191,15 @@
                 { 
                     name: 'Epinephrine (1:1,000) 💉 IM', 
                     doseFormula: w => w * 0.01, 
-                    max: 0.3, // IM 固定上限 0.3mg
+                    max: 0.3, 
                     route: 'IM (肌肉注射)', 
                     note: '👉 使用 <b>1cc空針</b> 抽取。<br>📍 <b>2歲以下：</b>大腿前外側 (Vastus lateralis)<br>📍 <b>2歲以上：</b>三角肌 (Deltoid)' 
                 },
                 {
                     name: 'Epinephrine 💨 IH (霧化吸入)',
                     doseFormula: w => w * 0.5,
-                    // 動態函數，根據傳入的年齡組別決定上限
-                    max: function(ageGroup) { return ageGroup === 'under4' ? 2.5 : 5.0; },
+                    // 動態函數：根據使用者輸入的「確切歲數」判定上限
+                    max: function(age) { return age < 4 ? 2.5 : 5.0; },
                     route: 'IH (Inhalation)',
                     note: '👉 <b>適用時機：</b>若 Stridor 未改善可考慮。<br>⚠️ <b>最大劑量限制：</b><br>👶 &lt; 4歲：2.5 mg<br>👦 ≥ 4歲：5.0 mg'
                 }
@@ -247,32 +244,44 @@
         document.getElementById('resultBoxNrp').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // 新增：全域變數記住當前按下的狀態
+    // 紀錄當前按下的疾病類別，為了讓打字時能「即時運算」
     let currentActiveCondition = null;
 
     function calculatePals(conditionKey) {
-        currentActiveCondition = conditionKey; // 記住使用者目前是在看哪一個藥物
-        const weight = parseFloat(document.getElementById('weightInputPals').value);
-        if (!weight || weight <= 0) {
-            alert('請先輸入正確的孩童體重！');
+        currentActiveCondition = conditionKey; 
+        const weightStr = document.getElementById('weightInputPals').value;
+        const ageStr = document.getElementById('ageInputPals').value;
+
+        if (weightStr === '' || parseFloat(weightStr) <= 0) {
+            alert('🚨 嗶嗶！請先輸入正確的孩童體重！');
+            return;
+        }
+        if (ageStr === '' || parseFloat(ageStr) < 0) {
+            alert('🚨 嗶嗶！請輸入孩童年齡！(未滿1歲請輸入 0)');
             return;
         }
         
-        // 抓取目前選取的年齡區間 (under4 或是 over4)
-        const ageGroup = document.querySelector('input[name="ageGroupPals"]:checked').value;
-        renderPALS(conditionKey, weight, ageGroup);
+        const weight = parseFloat(weightStr);
+        const age = parseFloat(ageStr);
+        renderPALS(conditionKey, weight, age);
     }
 
-    // 🌟 神級優化：綁定年齡切換事件，點擊年齡按鈕時「自動重新計算」
-    document.querySelectorAll('input[name="ageGroupPals"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-            const weightVal = document.getElementById('weightInputPals').value;
-            // 只有在已經輸入體重且有結果顯示的情況下，才自動重新計算
-            if (currentActiveCondition && weightVal > 0) {
-                calculatePals(currentActiveCondition);
+    // 🌟 無縫即時運算：使用者一邊打字，下面的數字就會直接跟著變！
+    function autoCalcPals() {
+        if (!currentActiveCondition) return;
+        const weightStr = document.getElementById('weightInputPals').value;
+        const ageStr = document.getElementById('ageInputPals').value;
+        
+        if (weightStr !== '' && ageStr !== '') {
+            const weight = parseFloat(weightStr);
+            const age = parseFloat(ageStr);
+            if (weight > 0 && age >= 0) {
+                renderPALS(currentActiveCondition, weight, age);
             }
-        });
-    });
+        }
+    }
+    document.getElementById('weightInputPals').addEventListener('input', autoCalcPals);
+    document.getElementById('ageInputPals').addEventListener('input', autoCalcPals);
 
     function renderNRP(conditionKey, weight) {
         const resultBox = document.getElementById('resultBoxNrp');
@@ -293,14 +302,13 @@
         resultBox.style.display = 'block';
     }
 
-    // 傳入 ageGroup 參數，用來動態判斷上限
-    function renderPALS(conditionKey, weight, ageGroup) {
+    // 核心渲染引擎：現在吃三個參數 (疾病, 體重, 歲數)
+    function renderPALS(conditionKey, weight, age) {
         const resultBox = document.getElementById('resultBox');
         const resultContent = document.getElementById('resultContent');
         const data = drugData[conditionKey];
         
-        let ageText = ageGroup === 'under4' ? '(< 4歲)' : '(≥ 4歲)';
-        document.getElementById('resultTitle').innerText = `👦 狀況：${conditionKey.replace('OHCA_', 'OHCA ')} | 體重: ${weight} kg ${ageText}`;
+        document.getElementById('resultTitle').innerText = `👦 狀況：${conditionKey.replace('OHCA_', 'OHCA ')} | 體重: ${weight} kg | 年齡: ${age} 歲`;
         
         let html = '';
 
@@ -331,9 +339,9 @@
             let dose = drug.doseFormula(weight);
             let currentMax = null;
 
-            // 判斷 max 是一個固定數值，還是一個需要傳入年齡判斷的函數
+            // 如果 max 是函數，就把剛才使用者填的 age 丟進去算上限
             if (typeof drug.max === 'function') {
-                currentMax = drug.max(ageGroup);
+                currentMax = drug.max(age);
             } else if (typeof drug.max !== 'undefined') {
                 currentMax = drug.max;
             }
