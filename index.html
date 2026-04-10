@@ -34,7 +34,7 @@
         .section.active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 雙輸入框並排設計 */
+        /* 雙輸入框 */
         .input-group { display: flex; gap: 15px; margin-bottom: 15px; }
         .input-field { flex: 1; }
         .input-field label { font-size: 15px; font-weight: bold; display: block; margin-bottom: 8px; color: #37474f; }
@@ -60,6 +60,12 @@
         .drug-vol { color: #1565c0; font-weight: 900; font-size: 24px; }
         .drug-note { font-size: 14px; color: #333; margin-top: 10px; background-color: #fff8e1; padding: 10px; border-radius: 6px; line-height: 1.6; border: 1px solid #ffecb3;}
         
+        /* 癲癇評估按鈕專用樣式 */
+        .epi-condition-btn { width: 100%; text-align: left; font-size: 14px; padding: 12px; margin-bottom: 8px; background: #f5f5f5; color: #333; border: 2px solid #cfd8dc; border-radius: 8px; cursor: pointer; line-height: 1.5; transition: 0.2s; font-weight: bold;}
+        .epi-condition-btn:active { transform: scale(0.98); }
+        .epi-selected { background: #e8f5e9; border-color: #4caf50; color: #1b5e20; }
+
+        /* NRP 流程圖樣式 */
         .flow-container { background: #fff; padding: 15px; border-radius: 10px; border: 2px solid #b2dfdb; box-shadow: 0 2px 8px rgba(0,137,123,0.1); margin-top: 10px;}
         .flow-header { text-align: center; font-size: 18px; font-weight: bold; color: #00695c; margin-bottom: 15px; border-bottom: 2px dashed #80cbc4; padding-bottom: 8px;}
         .flow-step { background: #f5f5f5; padding: 10px 12px; margin-bottom: 5px; border-radius: 6px; border-left: 4px solid #00897b; font-size: 14px; color: #212121; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
@@ -109,7 +115,7 @@
             <button class="action-btn ohca" onclick="calculatePals('OHCA_小兒')">OHCA 小兒<br><span style="font-size:13px; font-weight:normal;">(1歲~青春期)</span></button>
             <button class="action-btn" style="background: linear-gradient(145deg, #fb8c00, #ef6c00);" onclick="calculatePals('嚴重過敏')">嚴重過敏</button>
             <button class="action-btn" style="background: linear-gradient(145deg, #43a047, #2e7d32);" onclick="calculatePals('氣喘')">氣喘</button>
-            <button class="action-btn" onclick="calculatePals('癲癇')">癲癇</button>
+            <button class="action-btn" style="background: linear-gradient(145deg, #8e24aa, #6a1b9a);" onclick="calculatePals('癲癇')">癲癇</button>
             <button class="action-btn" onclick="calculatePals('低血糖')">低血糖</button>
             <button class="action-btn" onclick="calculatePals('發燒')">發燒</button>
         </div>
@@ -169,8 +175,8 @@
     }
 
     const ohcaDrugs = [
-        { name: 'Epinephrine (1:10,000)', doseFormula: w => w * 0.01, volFormula: w => w * 0.1, max: 1, route: 'IV/IO', note: '👉準備 10cc空針。⚡抽 1cc EPI 再抽 9cc N/S，給予 0.1cc/kg 的量。每 3-5 分鐘一次。' },
-        { name: 'Amiodarone', doseFormula: w => w * 5, volFormula: w => w * 0.1, max: 300, route: 'IV/IO', note: '👉準備 5cc空針。⚡不須稀釋，對於可電擊心率(pVT/VF)最多可重複 3 劑。' }
+        { name: 'Epinephrine (1:10,000)', doseFormula: w => w * 0.01, volRatio: 10, max: 1, route: 'IV/IO', note: '👉準備 10cc空針。⚡抽 1cc EPI 再抽 9cc N/S，給予 0.1cc/kg 的量。每 3-5 分鐘一次。' },
+        { name: 'Amiodarone', doseFormula: w => w * 5, volRatio: 0.02, max: 300, route: 'IV/IO', note: '👉準備 5cc空針。⚡不須稀釋，對於可電擊心率(pVT/VF)最多可重複 3 劑。' }
     ];
 
     const drugData = {
@@ -190,6 +196,7 @@
                 { 
                     name: 'Epinephrine (1:1,000) 💉 IM', 
                     doseFormula: w => w * 0.01, 
+                    volRatio: 1, // 0.01mg 就是 0.01cc
                     max: 0.3, 
                     route: 'IM (肌肉注射)', 
                     note: '👉 使用 <b>1cc空針</b> 抽取。<br>📍 <b>2歲以下：</b>大腿前外側 (Vastus lateralis)<br>📍 <b>2歲以上：</b>三角肌 (Deltoid)' 
@@ -197,64 +204,51 @@
                 {
                     name: 'Epinephrine 💨 IH (霧化吸入)',
                     doseFormula: w => w * 0.5,
+                    volRatio: 1, // 2.5mg 就是 2.5cc
                     max: function(age) { return age < 4 ? 2.5 : 5.0; },
                     route: 'IH (Inhalation)',
                     note: '👉 <b>適用時機：</b>若 Stridor 未改善可考慮。<br>⚠️ <b>最大劑量限制：</b><br>👶 &lt; 4歲：2.5 mg<br>👦 ≥ 4歲：5.0 mg'
                 }
             ]
         },
-        
-        // 🌟 氣喘改為「動態函數」，根據使用者輸入的「歲數」與「體重」自動判定
         '氣喘': function(w, age) {
             let ihDrug = {};
-
             if (age < 1) {
-                // 0 歲 (未滿1歲)：完全不給 IH
-                ihDrug = {
-                    name: 'Albuterol 💨 IH (EMT-P 氣霧吸入)',
-                    route: 'IH (禁忌症)',
-                    hideDose: true,
-                    note: '🚨 <span style="color:#d32f2f; font-size:16px;"><b>警告：嬰兒（未滿 1 歲）不可給予 IH 氣霧吸入治療！</b></span>'
-                };
+                ihDrug = { name: 'Albuterol 💨 IH (EMT-P)', route: 'IH (禁忌症)', hideDose: true, note: '🚨 <span style="color:#d32f2f; font-size:16px;"><b>警告：嬰兒（未滿 1 歲）不可給予 IH 氣霧吸入治療！</b></span>' };
             } else if ((age >= 1 && age <= 8) || (w < 40)) {
-                // 1~8 歲 或 體重 < 40kg：給予 2.5mg
-                ihDrug = {
-                    name: 'Albuterol 💨 IH (EMT-P 氣霧吸入)',
-                    doseFormula: () => 2.5,
-                    route: 'IH',
-                    note: '👉 <b>給藥條件 (符合其一)：</b><br>1. 無法配合使用 MDI<br>2. 使用呼吸輔助肌 且 SpO2 < 90%<br><br>⚡ <b>配置方式：</b><br>將 <b>2.5mg</b> Albuterol 溶於 0.9% N/S 至 <b>4mL</b>，置入小型噴霧器。<br><br>💨 <b>給予方式：</b><br>氧氣流量 <b>6 L/min</b>。<br>⚠️ <b>應避免連接潮氣瓶</b>，以免影響藥物霧化效率！'
-                };
+                ihDrug = { name: 'Albuterol 💨 IH (EMT-P)', doseFormula: () => 2.5, route: 'IH', note: '👉 <b>給藥條件 (符合其一)：</b><br>1. 無法配合使用 MDI<br>2. 使用呼吸輔助肌 且 SpO2 < 90%<br><br>⚡ <b>配置方式：</b><br>將 <b>2.5mg</b> Albuterol 溶於 0.9% N/S 至 <b>4mL</b>，置入小型噴霧器。<br><br>💨 <b>給予方式：</b><br>氧氣流量 <b>6 L/min</b>。<br>⚠️ <b>應避免連接潮氣瓶</b>，以免影響藥物霧化效率！' };
             } else {
-                // 超過 8 歲 且 體重 ≥ 40kg：跳出小兒指引範圍
-                ihDrug = {
-                    name: 'Albuterol 💨 IH (EMT-P 氣霧吸入)',
-                    route: 'IH (超出指引)',
-                    hideDose: true,
-                    note: '⚠️ <b>傷病患大於 8 歲且體重 ≥ 40kg，超出小兒氣喘 IH 給藥範圍，請依成人指引處置。</b>'
-                };
+                ihDrug = { name: 'Albuterol 💨 IH (EMT-P)', route: 'IH (超出指引)', hideDose: true, note: '⚠️ <b>傷病患大於 8 歲且體重 ≥ 40kg，超出小兒氣喘 IH 給藥範圍，請依成人指引處置。</b>' };
             }
-
             return {
                 isAdvanced: false,
                 drugs: [
-                    {
-                        name: '短效支氣管擴張劑 (如 Berotec MDI)',
-                        route: 'MDI (協助使用)',
-                        hideDose: true, // 不顯示計算灰框，直接在備註寫明
-                        note: '👉 <b>適用對象：</b>有哮鳴聲之傷病患 (EMT 可執行)。<br>⚡ <b>給藥方式：</b>協助使用 <b>2 劑</b>，間隔 1 分鐘。<br>⏳ <b>後續：</b>若送醫時間超過 20 分鐘以上，每 20 分鐘可再次用藥。'
-                    },
+                    { name: '短效支氣管擴張劑 (Berotec MDI)', route: 'MDI (協助使用)', hideDose: true, note: '👉 <b>適用對象：</b>有哮鳴聲之傷病患 (EMT 可執行)。<br>⚡ <b>給藥方式：</b>協助使用 <b>2 劑</b>，間隔 1 分鐘。<br>⏳ <b>後續：</b>若送醫超過 20 分鐘，每 20 分鐘可再次用藥。' },
                     ihDrug
                 ]
             };
         },
-
-        '癲癇': [ { name: 'Diazepam', doseFormula: w => w * 0.2, volFormula: null, max: 5, route: 'IV/IO', note: '緩慢推注' } ],
+        // 🌟 全新癲癇模組
+        '癲癇': {
+            isAdvanced: false,
+            isEpilepsy: true, // 標記為癲癇模組啟動 UI
+            drugs: [ 
+                { 
+                    name: 'Midazolam (Dormicum)', 
+                    doseFormula: w => w * 0.2, 
+                    volRatio: 1, // 0.2mg 就是 0.2cc
+                    max: 5, 
+                    route: 'IV / IM / IN', 
+                    note: '👉 使用 <b>1cc空針</b> 抽取。<br>⚠️ 若 5 分鐘後仍有抽搐現象，可再重複 1 次劑量。' 
+                } 
+            ] 
+        },
         '低血糖': [ { name: 'D10W (10% 葡萄糖水)', doseFormula: null, volFormula: w => w * 5, max: 250, route: 'IV/IO', note: '最大單次劑量 250 mL' } ],
         '發燒': [ { name: 'Acetaminophen (退燒藥)', doseFormula: w => w * 15, volFormula: null, max: 1000, route: 'PO/PR', note: '每 4-6 小時一次' } ],
 
         'NRP_OHCA': [
-            { name: 'Epinephrine (1:10,000) 💉 優先', doseFormula: w => w * 0.02, volFormula: w => w * 0.2, max: 99, route: 'IV/IO', note: '👉 準備 1cc空針。⚡ 抽 0.1cc EPI 再抽 0.9cc N/S，給予 0.2cc/kg 的量。' },
-            { name: 'Epinephrine (1:10,000) ⚠️ 替代', doseFormula: w => w * 0.1, volFormula: w => w * 1.0, max: 99, route: 'ET (管內)', note: '👉 10cc空針。⚡ 抽 1cc EPI 再抽 9cc N/S，給予 1cc/kg 的量。' }
+            { name: 'Epinephrine (1:10,000) 💉 優先', doseFormula: w => w * 0.02, volRatio: 10, max: 99, route: 'IV/IO', note: '👉 準備 1cc空針。⚡ 抽 0.1cc EPI 再抽 0.9cc N/S，給予 0.2cc/kg 的量。' },
+            { name: 'Epinephrine (1:10,000) ⚠️ 替代', doseFormula: w => w * 0.1, volRatio: 10, max: 99, route: 'ET (管內)', note: '👉 10cc空針。⚡ 抽 1cc EPI 再抽 9cc N/S，給予 1cc/kg 的量。' }
         ]
     };
 
@@ -323,6 +317,19 @@
     document.getElementById('weightInputPals').addEventListener('input', autoCalcPals);
     document.getElementById('ageInputPals').addEventListener('input', autoCalcPals);
 
+    // 癲癇專用：按鈕點擊後展開藥物
+    window.confirmEpilepsy = function(btn) {
+        let btns = btn.parentElement.querySelectorAll('button');
+        btns.forEach(b => {
+            b.classList.remove('epi-selected');
+        });
+        btn.classList.add('epi-selected');
+        
+        let drugBox = document.getElementById('epilepsyDrugsBox');
+        drugBox.style.display = 'block';
+        setTimeout(() => drugBox.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+    };
+
     function renderNRP(conditionKey, weight) {
         const resultBox = document.getElementById('resultBoxNrp');
         const resultContent = document.getElementById('resultContentNrp');
@@ -331,7 +338,10 @@
         let html = '';
         drugData[conditionKey].forEach(function(drug) {
             let doseHtml = `<span class="drug-dose">${Math.round(drug.doseFormula(weight) * 1000) / 1000} mg</span>`;
-            let volHtml = `<span class="drug-vol">${Math.round(drug.volFormula(weight) * 100) / 100} cc</span>`;
+            // NRP 使用 volRatio 引擎
+            let vol = drug.volRatio ? (drug.doseFormula(weight) * drug.volRatio) : drug.volFormula(weight);
+            let volHtml = `<span class="drug-vol">${Math.round(vol * 100) / 100} cc</span>`;
+            
             html += `<div class="drug-item">
                 <div class="drug-name">${drug.name}</div>
                 <div>途徑: ${drug.route} | 應抽劑量: ${doseHtml} | 體積: ${volHtml}</div>
@@ -346,7 +356,6 @@
         const resultBox = document.getElementById('resultBox');
         const resultContent = document.getElementById('resultContent');
         
-        // 透過 typeof 判斷，如果是函數就執行它來取得最新的資料庫
         let rawData = drugData[conditionKey];
         const data = typeof rawData === 'function' ? rawData(weight, age) : rawData;
         
@@ -357,12 +366,7 @@
         if (data.isAdvanced) {
             html += `<div class="drug-item" style="border-left-color: #e91e63;">
                 <div class="drug-name">🫀 CPR 指引</div>
-                <ul class="cpr-list">
-                    <li><b>姿勢：</b>${data.cpr.posture}</li>
-                    <li><b>深度：</b>${data.cpr.depth}</li>
-                    <li><b>AED：</b>${data.cpr.aed}</li>
-                    <li><b>比例：</b>${data.cpr.ratio}</li>
-                </ul>
+                <ul class="cpr-list"><li><b>姿勢：</b>${data.cpr.posture}</li><li><b>深度：</b>${data.cpr.depth}</li><li><b>AED：</b>${data.cpr.aed}</li><li><b>比例：</b>${data.cpr.ratio}</li></ul>
             </div>`;
             html += `<div class="drug-item" style="border-left-color: #ff9800;">
                 <div class="drug-name">⚡ 電擊 (2J / 4J / Max 10J)</div>
@@ -376,11 +380,23 @@
             </div>`;
         }
 
+        // 🌟 如果是癲癇，先渲染「確認條件 UI」
+        if (data.isEpilepsy) {
+            html += `
+            <div class="flow-container" style="border-color: #8e24aa; margin-bottom:15px;">
+                <div class="flow-header" style="color: #6a1b9a; border-bottom-color: #ce93d8;">⚠️ 癲癇重積狀態 (SE) 評估</div>
+                <div style="font-size: 14px; margin-bottom: 12px; color: #d32f2f; font-weight: bold;">請確認傷病患是否符合以下任一條件 (點擊確認)：</div>
+                <button class="epi-condition-btn" onclick="confirmEpilepsy(this)">一、全身抽搐且意識改變，連續超過 5 分鐘</button>
+                <button class="epi-condition-btn" onclick="confirmEpilepsy(this)">二、在 5 分鐘內有 2 次發作，且停止抽搐期間意識未能恢復至平時或正常意識狀態</button>
+            </div>
+            <div id="epilepsyDrugsBox" style="display: none; animation: fadeIn 0.5s;">
+            `;
+        }
+
         const drugsToRender = data.isAdvanced ? data.drugs : (data.drugs || data);
         drugsToRender.forEach(function(drug) {
             let doseContainerHtml = '';
 
-            // 如果該藥物設定為隱藏劑量計算區塊（例如 MDI 給2劑、或是禁忌症）
             if (!drug.hideDose) {
                 let dose = drug.doseFormula(weight);
                 let currentMax = null;
@@ -398,12 +414,19 @@
                 }
                 
                 let doseHtml = `<span class="drug-dose">${Math.round(dose * 1000) / 1000} mg</span>`;
-                
                 if (isCapped) {
                     doseHtml += `<br><span style="color:#d32f2f; font-size:14px; font-weight:bold;">(⚠️ 已達最大安全上限 ${currentMax} mg)</span>`;
                 }
 
-                let volHtml = drug.volFormula ? `<br>體積: <span class="drug-vol">${Math.round(drug.volFormula(weight) * 100) / 100} cc</span>` : '';
+                // 🌟 使用連動體積引擎 (volRatio) 來確保即使劑量被鎖住，體積也會跟著鎖定
+                let volHtml = '';
+                if (typeof drug.volRatio !== 'undefined') {
+                    let vol = dose * drug.volRatio; // 使用被 cap 過的 dose 乘上比例
+                    volHtml = `<br>體積: <span class="drug-vol">${Math.round(vol * 100) / 100} cc</span>`;
+                } else if (drug.volFormula) {
+                    let vol = drug.volFormula(weight);
+                    volHtml = `<br>體積: <span class="drug-vol">${Math.round(vol * 100) / 100} cc</span>`;
+                }
 
                 doseContainerHtml = `<div style="margin-top: 8px; background: #f5f5f5; padding: 10px; border-radius: 6px; border-left: 4px solid #9e9e9e;">應給劑量: ${doseHtml} ${volHtml}</div>`;
             }
@@ -415,6 +438,11 @@
                 <div class="drug-note">📝 備註:<br> ${drug.note}</div>
             </div>`;
         });
+
+        // 🌟 如果是癲癇，補上 div 結尾標籤
+        if (data.isEpilepsy) {
+            html += `</div>`; 
+        }
 
         resultContent.innerHTML = html;
         resultBox.style.display = 'block';
