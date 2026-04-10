@@ -136,7 +136,7 @@
                 volFormula: w => w * 0.2, 
                 max: 99, 
                 route: 'IV/IO (靜脈/骨內)', 
-                note: '👉 準備10cc空針。<br>⚡ 抽1cc epinephrine再抽9cc N/S，給予患者 <b>0.2cc/kg</b> 的量，若心跳仍未達 60 次/分，每 3-5 分鐘重複給藥。<div class="ref-text">💡 基準: 應抽劑量 0.02mg/kg (0.01~0.03mg/kg) | 體積 0.2cc/kg (0.1~0.3cc/kg)</div>',
+                note: '👉 準備 <b>1cc空針</b>。<br>⚡ 抽 <b>0.1cc</b> epinephrine再抽 <b>0.9cc</b> N/S(補滿一支1cc的量)，給予患者 <b>0.2cc/kg</b> 的量，若心跳仍未達 60 次/分，每 3-5 分鐘重複給藥。<div class="ref-text">💡 基準: 應抽劑量 0.02mg/kg (0.01~0.03mg/kg) | 體積 0.2cc/kg (0.1~0.3cc/kg)</div>',
                 type: 'iv'
             },
             { 
@@ -224,7 +224,7 @@
             <div class="${styleClass}">
                 <div class="drug-name">${drug.name}</div>
                 <div>給藥途徑: <span style="font-weight:bold;">${drug.route}</span></div>
-                <div style="margin-top: 10px; background: #f5f5f5; padding: 10px; border-radius: 6px; border-left: 4px solid #9e9e9e;">應抽劑量: ${doseHtml} ${volHtml ? '<br>實際體積: ' + volHtml : ''}</div>
+                <div style="margin-top: 10px; background: #f5f5f5; padding: 10px; border-radius: 6px; border-left: 4px solid #9e9e9e;">應抽劑量: ${doseHtml} ${volHtml ? '<br>實際給予體積: ' + volHtml : ''}</div>
                 <div class="drug-note">📝 備註:<br> ${drug.note}</div>
             </div>`;
         });
