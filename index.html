@@ -228,10 +228,9 @@
                 ]
             };
         },
-        // 🌟 全新癲癇模組
         '癲癇': {
             isAdvanced: false,
-            isEpilepsy: true, // 標記為癲癇模組啟動 UI
+            isEpilepsy: true,
             drugs: [ 
                 { 
                     name: 'Midazolam (Dormicum)', 
@@ -239,7 +238,8 @@
                     volRatio: 1, // 0.2mg 就是 0.2cc
                     max: 5, 
                     route: 'IV / IM / IN', 
-                    note: '👉 使用 <b>1cc空針</b> 抽取。<br>⚠️ 若 5 分鐘後仍有抽搐現象，可再重複 1 次劑量。' 
+                    // 🌟 這裡把 1cc 空針改成了 5cc 空針
+                    note: '👉 使用 <b>5cc空針</b> 抽取。<br>⚠️ 若 5 分鐘後仍有抽搐現象，可再重複 1 次劑量。' 
                 } 
             ] 
         },
@@ -317,7 +317,6 @@
     document.getElementById('weightInputPals').addEventListener('input', autoCalcPals);
     document.getElementById('ageInputPals').addEventListener('input', autoCalcPals);
 
-    // 癲癇專用：按鈕點擊後展開藥物
     window.confirmEpilepsy = function(btn) {
         let btns = btn.parentElement.querySelectorAll('button');
         btns.forEach(b => {
@@ -338,7 +337,6 @@
         let html = '';
         drugData[conditionKey].forEach(function(drug) {
             let doseHtml = `<span class="drug-dose">${Math.round(drug.doseFormula(weight) * 1000) / 1000} mg</span>`;
-            // NRP 使用 volRatio 引擎
             let vol = drug.volRatio ? (drug.doseFormula(weight) * drug.volRatio) : drug.volFormula(weight);
             let volHtml = `<span class="drug-vol">${Math.round(vol * 100) / 100} cc</span>`;
             
@@ -380,7 +378,6 @@
             </div>`;
         }
 
-        // 🌟 如果是癲癇，先渲染「確認條件 UI」
         if (data.isEpilepsy) {
             html += `
             <div class="flow-container" style="border-color: #8e24aa; margin-bottom:15px;">
@@ -418,10 +415,9 @@
                     doseHtml += `<br><span style="color:#d32f2f; font-size:14px; font-weight:bold;">(⚠️ 已達最大安全上限 ${currentMax} mg)</span>`;
                 }
 
-                // 🌟 使用連動體積引擎 (volRatio) 來確保即使劑量被鎖住，體積也會跟著鎖定
                 let volHtml = '';
                 if (typeof drug.volRatio !== 'undefined') {
-                    let vol = dose * drug.volRatio; // 使用被 cap 過的 dose 乘上比例
+                    let vol = dose * drug.volRatio; 
                     volHtml = `<br>體積: <span class="drug-vol">${Math.round(vol * 100) / 100} cc</span>`;
                 } else if (drug.volFormula) {
                     let vol = drug.volFormula(weight);
@@ -439,7 +435,6 @@
             </div>`;
         });
 
-        // 🌟 如果是癲癇，補上 div 結尾標籤
         if (data.isEpilepsy) {
             html += `</div>`; 
         }
