@@ -41,6 +41,12 @@
         input[type="number"] { width: 100%; padding: 15px; font-size: 22px; border: 2px solid #b0bec5; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; text-align: center; background-color: #fafafa; transition: 0.3s;}
         input[type="number"]:focus { border-color: #1976d2; outline: none; background-color: #fff; box-shadow: 0 0 8px rgba(25,118,210,0.2);}
         
+        /* 新增：年齡選擇按鈕樣式 */
+        .age-toggle { display: flex; gap: 10px; margin-bottom: 15px; }
+        .age-toggle input[type="radio"] { display: none; }
+        .age-btn { flex: 1; padding: 12px; text-align: center; background: #eceff1; border: 2px solid #cfd8dc; border-radius: 8px; font-size: 16px; font-weight: bold; color: #546e7a; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        .age-toggle input[type="radio"]:checked + .age-btn { background: #e3f2fd; border-color: #1e88e5; color: #1565c0; transform: scale(1.02); box-shadow: 0 4px 8px rgba(30,136,229,0.2);}
+
         /* 按鈕網格 */
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
         button.action-btn { padding: 14px 10px; font-size: 16px; font-weight: bold; color: white; background: linear-gradient(145deg, #546e7a, #37474f); border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s;}
@@ -94,8 +100,18 @@
     </div>
 
     <div id="palsSection" class="section active">
+        
         <label for="weightInputPals">請輸入孩童體重 (kg)：</label>
         <input type="number" id="weightInputPals" placeholder="例如: 10" inputmode="decimal">
+
+        <label>請選擇孩童年齡區間：</label>
+        <div class="age-toggle">
+            <input type="radio" id="ageUnder4" name="ageGroupPals" value="under4" checked>
+            <label for="ageUnder4" class="age-btn">👶 &lt; 4 歲</label>
+            
+            <input type="radio" id="ageOver4" name="ageGroupPals" value="over4">
+            <label for="ageOver4" class="age-btn">👦 ≥ 4 歲</label>
+        </div>
 
         <div class="btn-grid">
             <button class="action-btn ohca" onclick="calculatePals('OHCA_嬰兒')">OHCA 嬰兒<br><span style="font-size:13px; font-weight:normal;">(1歲以下)</span></button>
@@ -180,21 +196,22 @@
         },
         '嚴重過敏': {
             isAdvanced: false,
-            specialDose: true, // 標記為特殊格式
+            specialDose: true,
             drugs: [
                 { 
                     name: 'Epinephrine (1:1,000) 💉 IM', 
                     doseFormula: w => w * 0.01, 
-                    max: 0.3, 
+                    max: 0.3, // IM 固定上限 0.3mg
                     route: 'IM (肌肉注射)', 
                     note: '👉 使用 <b>1cc空針</b> 抽取。<br>📍 <b>2歲以下：</b>大腿前外側 (Vastus lateralis)<br>📍 <b>2歲以上：</b>三角肌 (Deltoid)' 
                 },
                 {
                     name: 'Epinephrine 💨 IH (霧化吸入)',
                     doseFormula: w => w * 0.5,
-                    max: 99, // 由備註說明上限
+                    // 利用動態函數，根據傳入的年齡組別決定上限
+                    max: function(ageGroup) { return ageGroup === 'under4' ? 2.5 : 5.0; },
                     route: 'IH (Inhalation)',
-                    note: '👉 <b>適用時機：</b>若 Stridor 未改善可考慮。<br>⚠️ <b>最大劑量限制：</b><br>👶 &lt; 4歲：2.5 mg<br>👦 &gt; 4歲：5.0 mg'
+                    note: '👉 <b>適用時機：</b>若 Stridor 未改善可考慮。<br>⚠️ <b>最大劑量限制：</b><br>👶 &lt; 4歲：2.5 mg<br>👦 ≥ 4歲：5.0 mg'
                 }
             ]
         },
@@ -205,122 +222,4 @@
 
         'NRP_OHCA': [
             { name: 'Epinephrine (1:10,000) 💉 優先', doseFormula: w => w * 0.02, volFormula: w => w * 0.2, max: 99, route: 'IV/IO', note: '👉 準備 1cc空針。⚡ 抽 0.1cc EPI 再抽 0.9cc N/S，給予 0.2cc/kg 的量。' },
-            { name: 'Epinephrine (1:10,000) ⚠️ 替代', doseFormula: w => w * 0.1, volFormula: w => w * 1.0, max: 99, route: 'ET (管內)', note: '👉 10cc空針。⚡ 抽 1cc EPI 再抽 9cc N/S，給予 1cc/kg 的量。' }
-        ]
-    };
-
-    function initNrpWeights() {
-        let grid = document.getElementById('nrpWeightGrid');
-        let html = '';
-        for(let w = 2.0; w <= 4.45; w += 0.1) {
-            let weightStr = (Math.round(w * 10) / 10).toFixed(1);
-            html += `<button class="weight-btn" onclick="selectNrpWeight(${weightStr}, this)">${weightStr}</button>`;
-        }
-        grid.innerHTML = html;
-    }
-    initNrpWeights();
-
-    function switchTab(sectionId, btnElement) {
-        document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById(sectionId).classList.add('active');
-        btnElement.classList.add('active');
-        document.getElementById('resultBox').style.display = 'none';
-        document.getElementById('resultBoxNrp').style.display = 'none';
-        document.querySelectorAll('.weight-btn').forEach(b => b.classList.remove('selected'));
-    }
-
-    function selectNrpWeight(weight, btnElement) {
-        document.querySelectorAll('.weight-btn').forEach(b => b.classList.remove('selected'));
-        btnElement.classList.add('selected');
-        renderNRP('NRP_OHCA', weight);
-        document.getElementById('resultBoxNrp').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    function calculatePals(conditionKey) {
-        const weight = parseFloat(document.getElementById('weightInputPals').value);
-        if (!weight || weight <= 0) {
-            alert('請先輸入正確的孩童體重！');
-            return;
-        }
-        renderPALS(conditionKey, weight);
-    }
-
-    function renderNRP(conditionKey, weight) {
-        const resultBox = document.getElementById('resultBoxNrp');
-        const resultContent = document.getElementById('resultContentNrp');
-        document.getElementById('resultTitleNrp').innerText = `👶 新生兒 NRP | 體重: ${weight} kg`;
-        
-        let html = '';
-        drugData[conditionKey].forEach(function(drug) {
-            let doseHtml = `<span class="drug-dose">${Math.round(drug.doseFormula(weight) * 1000) / 1000} mg</span>`;
-            let volHtml = `<span class="drug-vol">${Math.round(drug.volFormula(weight) * 100) / 100} cc</span>`;
-            html += `<div class="drug-item">
-                <div class="drug-name">${drug.name}</div>
-                <div>途徑: ${drug.route} | 應抽劑量: ${doseHtml} | 體積: ${volHtml}</div>
-                <div class="drug-note">${drug.note}</div>
-            </div>`;
-        });
-        resultContent.innerHTML = html;
-        resultBox.style.display = 'block';
-    }
-
-    function renderPALS(conditionKey, weight) {
-        const resultBox = document.getElementById('resultBox');
-        const resultContent = document.getElementById('resultContent');
-        const data = drugData[conditionKey];
-        
-        document.getElementById('resultTitle').innerText = `👦 狀況：${conditionKey.replace('OHCA_', 'OHCA ')} | 體重: ${weight} kg`;
-        
-        let html = '';
-
-        if (data.isAdvanced) {
-            html += `<div class="drug-item" style="border-left-color: #e91e63;">
-                <div class="drug-name">🫀 CPR 指引</div>
-                <ul class="cpr-list">
-                    <li><b>姿勢：</b>${data.cpr.posture}</li>
-                    <li><b>深度：</b>${data.cpr.depth}</li>
-                    <li><b>AED：</b>${data.cpr.aed}</li>
-                    <li><b>比例：</b>${data.cpr.ratio}</li>
-                </ul>
-            </div>`;
-            html += `<div class="drug-item" style="border-left-color: #ff9800;">
-                <div class="drug-name">⚡ 電擊 (2J / 4J / Max 10J)</div>
-                <div>首發: <span class="drug-dose">${weight * 2} J</span> | 次發: <span class="drug-dose">${weight * 4} J</span> | 最大: <span class="drug-dose">${Math.min(weight * 10, 200)} J</span></div>
-            </div>`;
-            let lma = getLMA(weight);
-            html += `<div class="drug-item" style="border-left-color: #9c27b0;">
-                <div class="drug-name">🌬️ LMA 型號判斷</div>
-                <div>建議: <span class="drug-dose" style="color:#9c27b0;">Size ${lma.size}</span> (充氣 ${lma.cuff} cc)</div>
-                <div class="drug-note">置入後通氣速率: <b>2~3秒/一口氣</b></div>
-            </div>`;
-        }
-
-        const drugsToRender = data.isAdvanced ? data.drugs : (data.drugs || data);
-        drugsToRender.forEach(function(drug) {
-            let dose = drug.doseFormula(weight);
-            // 嚴重過敏 IM 劑量上限防呆
-            if (conditionKey === '嚴重過敏' && drug.name.includes('IM')) {
-                dose = Math.min(dose, 0.3);
-            } else if (drug.max && dose > drug.max) {
-                dose = drug.max;
-            }
-            
-            let doseHtml = `<span class="drug-dose">${Math.round(dose * 1000) / 1000} mg</span>`;
-            let volHtml = drug.volFormula ? `<br>體積: <span class="drug-vol">${Math.round(drug.volFormula(weight) * 100) / 100} cc</span>` : '';
-
-            html += `<div class="drug-item">
-                <div class="drug-name">💊 ${drug.name}</div>
-                <div>途徑: <b>${drug.route}</b></div>
-                <div style="margin-top: 5px; background: #f5f5f5; padding: 8px; border-radius: 6px;">應給劑量: ${doseHtml} ${volHtml}</div>
-                <div class="drug-note">${drug.note}</div>
-            </div>`;
-        });
-
-        resultContent.innerHTML = html;
-        resultBox.style.display = 'block';
-    }
-</script>
-
-</body>
-</html>
+            { name: 'Epinephrine (1:10,000) ⚠️ 替代', doseFormula: w
