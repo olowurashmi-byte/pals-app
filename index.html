@@ -201,7 +201,7 @@
                     doseFormula: w => w * 0.01, 
                     volRatio: 1, 
                     max: 0.3, 
-                    route: 'IM (肌肉注射)', 
+                    route: 'IM', 
                     note: '👉 使用 <b>1cc空針</b> 抽取。<br>📍 <b>2歲以下：</b>大腿前外側 (Vastus lateralis)<br>📍 <b>2歲以上：</b>三角肌 (Deltoid)' 
                 },
                 {
@@ -209,7 +209,7 @@
                     doseFormula: w => w * 0.5,
                     volRatio: 1, 
                     max: function(age) { return age < 4 ? 2.5 : 5.0; },
-                    route: 'IH (Inhalation)',
+                    route: 'IH',
                     note: '👉 <b>適用時機：</b>若 Stridor 未改善可考慮。<br>⚠️ <b>最大劑量限制：</b><br>👶 &lt; 4歲：2.5 mg<br>👦 ≥ 4歲：5.0 mg'
                 }
             ]
@@ -238,10 +238,10 @@
                 { 
                     name: 'Midazolam (Dormicum)', 
                     doseFormula: w => w * 0.2, 
-                    volRatio: 1, 
+                    volRatio: 0.2, // 5mg = 1cc, 所以 1mg 是 0.2cc
                     max: 5, 
-                    route: 'IV / IM / IN', 
-                    note: '👉 使用 <b>5cc空針</b> 抽取。<br>⚠️ 若 5 分鐘後仍有抽搐現象，可再重複 1 次劑量。' 
+                    route: 'IM', // 改成只有 IM
+                    note: '👉 使用 <b>1cc 或 3cc 空針</b> 抽取。<br>⚠️ 若 5 分鐘後仍有抽搐現象，可再重複 1 次劑量。' 
                 } 
             ] 
         },
@@ -280,15 +280,13 @@
                 } 
             ] 
         },
-        
-        // 🌟 全新發燒模組
         '發燒': {
             isAdvanced: false,
-            isFever: true, // 標記為發燒模組啟動 UI
+            isFever: true, 
             drugs: [
                 { 
                     name: 'Diclofenac (Voren 塞劑)', 
-                    hideDose: true, // 發燒給藥是固定的半顆，不需要公式計算
+                    hideDose: true, 
                     route: 'Supp (直腸塞劑)', 
                     note: '👉 <b>給藥劑量：</b>使用 <b>半顆 (6.25mg)</b><br>⚠️ <b>注意：</b>此藥物僅在體溫 ≥ 39°C 時才考慮使用。' 
                 } 
@@ -445,7 +443,6 @@
             `;
         }
         
-        // 🌟 發燒模組：確認體溫 UI
         if (data.isFever) {
             html += `
             <div class="flow-container" style="border-color: #e53935; margin-bottom:15px; background: #fff8f8;">
