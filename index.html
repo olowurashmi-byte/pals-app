@@ -65,7 +65,6 @@
         .epi-condition-btn:active { transform: scale(0.98); }
         .epi-selected { background: #e8f5e9; border-color: #4caf50; color: #1b5e20; }
 
-        /* NRP 流程圖樣式 */
         .flow-container { background: #fff; padding: 15px; border-radius: 10px; border: 2px solid #b2dfdb; box-shadow: 0 2px 8px rgba(0,137,123,0.1); margin-top: 10px;}
         .flow-header { text-align: center; font-size: 18px; font-weight: bold; color: #00695c; margin-bottom: 15px; border-bottom: 2px dashed #80cbc4; padding-bottom: 8px;}
         .flow-step { background: #f5f5f5; padding: 10px 12px; margin-bottom: 5px; border-radius: 6px; border-left: 4px solid #00897b; font-size: 14px; color: #212121; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
@@ -80,6 +79,7 @@
         .box-warn { background: #fff8e1; border-color: #ffd54f; color: #f57f17;}
         .box-danger { background: #ffebee; border-color: #e57373; color: #b71c1c;}
         .mrsopa-note { font-size: 12px; color: #546e7a; margin-top: 8px; padding: 8px; background: #eceff1; border-radius: 6px; line-height: 1.4;}
+        .ref-text { font-size: 12px; color: #78909c; margin-top: 8px; border-top: 1px solid #cfd8dc; padding-top: 8px;}
         
         ul.cpr-list { margin: 8px 0 0 0; padding-left: 20px; font-size: 15px; color: #333; line-height: 1.6; }
         ul.cpr-list li { margin-bottom: 4px; }
@@ -116,7 +116,7 @@
             <button class="action-btn" style="background: linear-gradient(145deg, #fb8c00, #ef6c00);" onclick="calculatePals('嚴重過敏')">嚴重過敏</button>
             <button class="action-btn" style="background: linear-gradient(145deg, #43a047, #2e7d32);" onclick="calculatePals('氣喘')">氣喘</button>
             <button class="action-btn" style="background: linear-gradient(145deg, #8e24aa, #6a1b9a);" onclick="calculatePals('癲癇')">癲癇</button>
-            <button class="action-btn" onclick="calculatePals('低血糖')">低血糖</button>
+            <button class="action-btn" style="background: linear-gradient(145deg, #0277bd, #01579b);" onclick="calculatePals('低血糖')">低血糖</button>
             <button class="action-btn" onclick="calculatePals('發燒')">發燒</button>
         </div>
     </div>
@@ -196,7 +196,7 @@
                 { 
                     name: 'Epinephrine (1:1,000) 💉 IM', 
                     doseFormula: w => w * 0.01, 
-                    volRatio: 1, // 0.01mg 就是 0.01cc
+                    volRatio: 1, 
                     max: 0.3, 
                     route: 'IM (肌肉注射)', 
                     note: '👉 使用 <b>1cc空針</b> 抽取。<br>📍 <b>2歲以下：</b>大腿前外側 (Vastus lateralis)<br>📍 <b>2歲以上：</b>三角肌 (Deltoid)' 
@@ -204,7 +204,7 @@
                 {
                     name: 'Epinephrine 💨 IH (霧化吸入)',
                     doseFormula: w => w * 0.5,
-                    volRatio: 1, // 2.5mg 就是 2.5cc
+                    volRatio: 1, 
                     max: function(age) { return age < 4 ? 2.5 : 5.0; },
                     route: 'IH (Inhalation)',
                     note: '👉 <b>適用時機：</b>若 Stridor 未改善可考慮。<br>⚠️ <b>最大劑量限制：</b><br>👶 &lt; 4歲：2.5 mg<br>👦 ≥ 4歲：5.0 mg'
@@ -235,15 +235,52 @@
                 { 
                     name: 'Midazolam (Dormicum)', 
                     doseFormula: w => w * 0.2, 
-                    volRatio: 1, // 0.2mg 就是 0.2cc
+                    volRatio: 1, 
                     max: 5, 
                     route: 'IV / IM / IN', 
-                    // 🌟 這裡把 1cc 空針改成了 5cc 空針
                     note: '👉 使用 <b>5cc空針</b> 抽取。<br>⚠️ 若 5 分鐘後仍有抽搐現象，可再重複 1 次劑量。' 
                 } 
             ] 
         },
-        '低血糖': [ { name: 'D10W (10% 葡萄糖水)', doseFormula: null, volFormula: w => w * 5, max: 250, route: 'IV/IO', note: '最大單次劑量 250 mL' } ],
+        
+        // 🌟 全新低血糖模組
+        '低血糖': {
+            isAdvanced: false,
+            drugs: [
+                { 
+                    name: 'D10W (10% 葡萄糖水)', 
+                    doseFormula: null, // 血糖藥以體積為主，不標示劑量
+                    volFormula: w => Math.min(w * 5, 250), // 體積算法 w*5，且上限鎖死在 250cc
+                    route: 'IV / IO', 
+                    // 🌟 動態備註引擎：根據體重自動換算空針分配
+                    note: function(w, age) {
+                        let totalVol = Math.min(w * 5, 250);
+                        let syringeCount = Math.ceil(totalVol / 50);
+                        let fullSyringes = Math.floor(totalVol / 50);
+                        let remainder = totalVol % 50;
+
+                        let prepText = `👉 <b>給藥指引：</b>當血糖 <b>&lt; 60 mg/dl</b> 或測出 <b>LOW</b> 時給予。<br><br>` +
+                                       `🛠️ <b>【D10W 現場配置法】(若無原裝 D10W)：</b><br>` +
+                                       `需準備 <b><span style="color:#1565c0; font-size:18px;">${syringeCount}</span></b> 支 50cc 空針。<br>`;
+
+                        if (fullSyringes > 0) {
+                            prepText += `➤ <b>${fullSyringes} 支滿針：</b>每支抽 D50W <b>10cc</b> + N/S <b>40cc</b><br>`;
+                        }
+                        if (remainder > 0) {
+                            // 避免 JS 浮點數誤差，取到小數點後一位
+                            let rD50 = Math.round((remainder / 5) * 10) / 10;
+                            let rNS = Math.round((remainder - rD50) * 10) / 10;
+                            prepText += `➤ <b>最後 1 支：</b>抽 D50W <b>${rD50}cc</b> + N/S <b>${rNS}cc</b><br>`;
+                        }
+                        
+                        let totalD50 = Math.round((totalVol / 5) * 10) / 10;
+                        let totalNS = Math.round((totalVol - totalVol/5) * 10) / 10;
+                        prepText += `<div class="ref-text">💡 驗算總量：D50W ${totalD50}cc + N/S ${totalNS}cc = 總體積 ${totalVol}cc</div>`;
+                        return prepText;
+                    }
+                } 
+            ] 
+        },
         '發燒': [ { name: 'Acetaminophen (退燒藥)', doseFormula: w => w * 15, volFormula: null, max: 1000, route: 'PO/PR', note: '每 4-6 小時一次' } ],
 
         'NRP_OHCA': [
@@ -395,43 +432,56 @@
             let doseContainerHtml = '';
 
             if (!drug.hideDose) {
-                let dose = drug.doseFormula(weight);
-                let currentMax = null;
-
-                if (typeof drug.max === 'function') {
-                    currentMax = drug.max(age);
-                } else if (typeof drug.max !== 'undefined') {
-                    currentMax = drug.max;
-                }
-
+                // 如果沒有 doseFormula (如低血糖)，就隱藏劑量區塊，只顯示體積
+                let doseHtml = '';
                 let isCapped = false;
-                if (currentMax !== null && dose > currentMax) {
-                    dose = currentMax;
-                    isCapped = true;
-                }
-                
-                let doseHtml = `<span class="drug-dose">${Math.round(dose * 1000) / 1000} mg</span>`;
-                if (isCapped) {
-                    doseHtml += `<br><span style="color:#d32f2f; font-size:14px; font-weight:bold;">(⚠️ 已達最大安全上限 ${currentMax} mg)</span>`;
+                let currentMax = null;
+                let dose = 0;
+
+                if (drug.doseFormula) {
+                    dose = drug.doseFormula(weight);
+                    
+                    if (typeof drug.max === 'function') {
+                        currentMax = drug.max(age);
+                    } else if (typeof drug.max !== 'undefined') {
+                        currentMax = drug.max;
+                    }
+
+                    if (currentMax !== null && dose > currentMax) {
+                        dose = currentMax;
+                        isCapped = true;
+                    }
+                    
+                    doseHtml = `應給劑量: <span class="drug-dose">${Math.round(dose * 1000) / 1000} mg</span>`;
+                    if (isCapped) {
+                        doseHtml += `<br><span style="color:#d32f2f; font-size:14px; font-weight:bold;">(⚠️ 已達最大安全上限 ${currentMax} mg)</span>`;
+                    }
                 }
 
                 let volHtml = '';
                 if (typeof drug.volRatio !== 'undefined') {
                     let vol = dose * drug.volRatio; 
-                    volHtml = `<br>體積: <span class="drug-vol">${Math.round(vol * 100) / 100} cc</span>`;
+                    volHtml = `體積: <span class="drug-vol">${Math.round(vol * 100) / 100} cc</span>`;
                 } else if (drug.volFormula) {
                     let vol = drug.volFormula(weight);
-                    volHtml = `<br>體積: <span class="drug-vol">${Math.round(vol * 100) / 100} cc</span>`;
+                    volHtml = `體積: <span class="drug-vol">${Math.round(vol * 100) / 100} cc</span>`;
                 }
 
-                doseContainerHtml = `<div style="margin-top: 8px; background: #f5f5f5; padding: 10px; border-radius: 6px; border-left: 4px solid #9e9e9e;">應給劑量: ${doseHtml} ${volHtml}</div>`;
+                // 將劑量和體積組合起來
+                let combinedDoseVol = [doseHtml, volHtml].filter(Boolean).join('<br>');
+                if(combinedDoseVol) {
+                    doseContainerHtml = `<div style="margin-top: 8px; background: #f5f5f5; padding: 10px; border-radius: 6px; border-left: 4px solid #9e9e9e;">${combinedDoseVol}</div>`;
+                }
             }
+
+            // 🌟 執行「動態備註」引擎
+            let noteContent = typeof drug.note === 'function' ? drug.note(weight, age) : drug.note;
 
             html += `<div class="drug-item">
                 <div class="drug-name">💊 ${drug.name}</div>
                 <div>途徑: <b>${drug.route}</b></div>
                 ${doseContainerHtml}
-                <div class="drug-note">📝 備註:<br> ${drug.note}</div>
+                <div class="drug-note">📝 備註:<br> ${noteContent}</div>
             </div>`;
         });
 
