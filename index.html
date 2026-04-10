@@ -60,10 +60,13 @@
         .drug-vol { color: #1565c0; font-weight: 900; font-size: 24px; }
         .drug-note { font-size: 14px; color: #333; margin-top: 10px; background-color: #fff8e1; padding: 10px; border-radius: 6px; line-height: 1.6; border: 1px solid #ffecb3;}
         
-        /* 癲癇評估按鈕專用樣式 */
+        /* 條件按鈕專用樣式 */
         .epi-condition-btn { width: 100%; text-align: left; font-size: 14px; padding: 12px; margin-bottom: 8px; background: #f5f5f5; color: #333; border: 2px solid #cfd8dc; border-radius: 8px; cursor: pointer; line-height: 1.5; transition: 0.2s; font-weight: bold;}
         .epi-condition-btn:active { transform: scale(0.98); }
         .epi-selected { background: #e8f5e9; border-color: #4caf50; color: #1b5e20; }
+        .fever-btn { width: 100%; text-align: center; font-size: 16px; padding: 15px; margin-bottom: 8px; background: #ffebee; color: #c62828; border: 2px solid #ef9a9a; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;}
+        .fever-btn:active { transform: scale(0.98); }
+        .fever-selected { background: #d32f2f; color: white; border-color: #b71c1c; box-shadow: 0 4px 8px rgba(211,47,47,0.3);}
 
         .flow-container { background: #fff; padding: 15px; border-radius: 10px; border: 2px solid #b2dfdb; box-shadow: 0 2px 8px rgba(0,137,123,0.1); margin-top: 10px;}
         .flow-header { text-align: center; font-size: 18px; font-weight: bold; color: #00695c; margin-bottom: 15px; border-bottom: 2px dashed #80cbc4; padding-bottom: 8px;}
@@ -117,7 +120,7 @@
             <button class="action-btn" style="background: linear-gradient(145deg, #43a047, #2e7d32);" onclick="calculatePals('氣喘')">氣喘</button>
             <button class="action-btn" style="background: linear-gradient(145deg, #8e24aa, #6a1b9a);" onclick="calculatePals('癲癇')">癲癇</button>
             <button class="action-btn" style="background: linear-gradient(145deg, #0277bd, #01579b);" onclick="calculatePals('低血糖')">低血糖</button>
-            <button class="action-btn" onclick="calculatePals('發燒')">發燒</button>
+            <button class="action-btn" style="background: linear-gradient(145deg, #e53935, #c62828);" onclick="calculatePals('發燒')">發燒</button>
         </div>
     </div>
 
@@ -242,17 +245,14 @@
                 } 
             ] 
         },
-        
-        // 🌟 全新低血糖模組
         '低血糖': {
             isAdvanced: false,
             drugs: [
                 { 
                     name: 'D10W (10% 葡萄糖水)', 
-                    doseFormula: null, // 血糖藥以體積為主，不標示劑量
-                    volFormula: w => Math.min(w * 5, 250), // 體積算法 w*5，且上限鎖死在 250cc
+                    doseFormula: null, 
+                    volFormula: w => Math.min(w * 5, 250), 
                     route: 'IV / IO', 
-                    // 🌟 動態備註引擎：根據體重自動換算空針分配
                     note: function(w, age) {
                         let totalVol = Math.min(w * 5, 250);
                         let syringeCount = Math.ceil(totalVol / 50);
@@ -267,7 +267,6 @@
                             prepText += `➤ <b>${fullSyringes} 支滿針：</b>每支抽 D50W <b>10cc</b> + N/S <b>40cc</b><br>`;
                         }
                         if (remainder > 0) {
-                            // 避免 JS 浮點數誤差，取到小數點後一位
                             let rD50 = Math.round((remainder / 5) * 10) / 10;
                             let rNS = Math.round((remainder - rD50) * 10) / 10;
                             prepText += `➤ <b>最後 1 支：</b>抽 D50W <b>${rD50}cc</b> + N/S <b>${rNS}cc</b><br>`;
@@ -281,7 +280,20 @@
                 } 
             ] 
         },
-        '發燒': [ { name: 'Acetaminophen (退燒藥)', doseFormula: w => w * 15, volFormula: null, max: 1000, route: 'PO/PR', note: '每 4-6 小時一次' } ],
+        
+        // 🌟 全新發燒模組
+        '發燒': {
+            isAdvanced: false,
+            isFever: true, // 標記為發燒模組啟動 UI
+            drugs: [
+                { 
+                    name: 'Diclofenac (Voren 塞劑)', 
+                    hideDose: true, // 發燒給藥是固定的半顆，不需要公式計算
+                    route: 'Supp (直腸塞劑)', 
+                    note: '👉 <b>給藥劑量：</b>使用 <b>半顆 (6.25mg)</b><br>⚠️ <b>注意：</b>此藥物僅在體溫 ≥ 39°C 時才考慮使用。' 
+                } 
+            ] 
+        },
 
         'NRP_OHCA': [
             { name: 'Epinephrine (1:10,000) 💉 優先', doseFormula: w => w * 0.02, volRatio: 10, max: 99, route: 'IV/IO', note: '👉 準備 1cc空針。⚡ 抽 0.1cc EPI 再抽 0.9cc N/S，給予 0.2cc/kg 的量。' },
@@ -354,14 +366,20 @@
     document.getElementById('weightInputPals').addEventListener('input', autoCalcPals);
     document.getElementById('ageInputPals').addEventListener('input', autoCalcPals);
 
-    window.confirmEpilepsy = function(btn) {
+    window.confirmCondition = function(btn, boxId) {
         let btns = btn.parentElement.querySelectorAll('button');
         btns.forEach(b => {
             b.classList.remove('epi-selected');
+            b.classList.remove('fever-selected');
         });
-        btn.classList.add('epi-selected');
         
-        let drugBox = document.getElementById('epilepsyDrugsBox');
+        if (boxId === 'feverDrugsBox') {
+            btn.classList.add('fever-selected');
+        } else {
+            btn.classList.add('epi-selected');
+        }
+        
+        let drugBox = document.getElementById(boxId);
         drugBox.style.display = 'block';
         setTimeout(() => drugBox.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
     };
@@ -420,10 +438,22 @@
             <div class="flow-container" style="border-color: #8e24aa; margin-bottom:15px;">
                 <div class="flow-header" style="color: #6a1b9a; border-bottom-color: #ce93d8;">⚠️ 癲癇重積狀態 (SE) 評估</div>
                 <div style="font-size: 14px; margin-bottom: 12px; color: #d32f2f; font-weight: bold;">請確認傷病患是否符合以下任一條件 (點擊確認)：</div>
-                <button class="epi-condition-btn" onclick="confirmEpilepsy(this)">一、全身抽搐且意識改變，連續超過 5 分鐘</button>
-                <button class="epi-condition-btn" onclick="confirmEpilepsy(this)">二、在 5 分鐘內有 2 次發作，且停止抽搐期間意識未能恢復至平時或正常意識狀態</button>
+                <button class="epi-condition-btn" onclick="confirmCondition(this, 'epilepsyDrugsBox')">一、全身抽搐且意識改變，連續超過 5 分鐘</button>
+                <button class="epi-condition-btn" onclick="confirmCondition(this, 'epilepsyDrugsBox')">二、在 5 分鐘內有 2 次發作，且停止抽搐期間意識未能恢復至平時或正常意識狀態</button>
             </div>
             <div id="epilepsyDrugsBox" style="display: none; animation: fadeIn 0.5s;">
+            `;
+        }
+        
+        // 🌟 發燒模組：確認體溫 UI
+        if (data.isFever) {
+            html += `
+            <div class="flow-container" style="border-color: #e53935; margin-bottom:15px; background: #fff8f8;">
+                <div class="flow-header" style="color: #c62828; border-bottom-color: #ef9a9a;">🌡️ 體溫評估</div>
+                <div style="font-size: 14px; margin-bottom: 12px; color: #333; text-align: center;">請確認孩童的耳溫或肛溫是否達到給藥標準？</div>
+                <button class="fever-btn" onclick="confirmCondition(this, 'feverDrugsBox')">⚠️ 耳溫或肛溫 ≥ 39°C</button>
+            </div>
+            <div id="feverDrugsBox" style="display: none; animation: fadeIn 0.5s;">
             `;
         }
 
@@ -432,7 +462,6 @@
             let doseContainerHtml = '';
 
             if (!drug.hideDose) {
-                // 如果沒有 doseFormula (如低血糖)，就隱藏劑量區塊，只顯示體積
                 let doseHtml = '';
                 let isCapped = false;
                 let currentMax = null;
@@ -467,14 +496,12 @@
                     volHtml = `體積: <span class="drug-vol">${Math.round(vol * 100) / 100} cc</span>`;
                 }
 
-                // 將劑量和體積組合起來
                 let combinedDoseVol = [doseHtml, volHtml].filter(Boolean).join('<br>');
                 if(combinedDoseVol) {
                     doseContainerHtml = `<div style="margin-top: 8px; background: #f5f5f5; padding: 10px; border-radius: 6px; border-left: 4px solid #9e9e9e;">${combinedDoseVol}</div>`;
                 }
             }
 
-            // 🌟 執行「動態備註」引擎
             let noteContent = typeof drug.note === 'function' ? drug.note(weight, age) : drug.note;
 
             html += `<div class="drug-item">
@@ -485,7 +512,7 @@
             </div>`;
         });
 
-        if (data.isEpilepsy) {
+        if (data.isEpilepsy || data.isFever) {
             html += `</div>`; 
         }
 
