@@ -18,7 +18,6 @@
         h1 { text-align: center; color: #263238; font-size: 26px; margin-bottom: 5px; font-weight: 900; letter-spacing: 2px;}
         .warning { background-color: #ffebee; color: #c62828; padding: 10px; border-radius: 8px; font-size: 13px; margin-bottom: 20px; font-weight: bold; text-align: center; border-left: 4px solid #d32f2f;}
         
-        /* 估算區塊樣式 */
         .estimation-panel {
             background: #f1f8e9; border: 2px dashed #81c784; border-radius: 10px;
             padding: 15px; margin-bottom: 15px; display: none; animation: fadeIn 0.4s;
@@ -35,14 +34,12 @@
         .section { display: none; }
         .section.active { display: block; }
 
-        /* 🌟 強迫症治癒區：雙輸入框完美對齊排版 */
         .input-group { display: flex; gap: 10px; margin-bottom: 30px; align-items: flex-end;}
-        .input-field { flex: 1; position: relative; } /* 加入 position: relative 讓提示字懸空定位 */
+        .input-field { flex: 1; position: relative; } 
         .input-field label { font-size: 14px; font-weight: bold; display: block; margin-bottom: 5px; color: #37474f; }
         .input-field input { width: 100%; padding: 12px; font-size: 20px; border: 2px solid #b0bec5; border-radius: 8px; box-sizing: border-box; text-align: center; background-color: #fafafa; transition: 0.3s;}
         .input-field input:focus { border-color: #1976d2; outline: none; background-color: #fff; box-shadow: 0 0 8px rgba(25,118,210,0.2); }
         .est-trigger-btn { padding: 12px 10px; background: #546e7a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; white-space: nowrap; height: 50px;}
-        /* 懸空的小提示字，不再干擾上方對齊 */
         .input-hint { position: absolute; top: 100%; left: 0; width: 100%; font-size: 12px; color: #78909c; text-align: center; margin-top: 4px; }
 
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
@@ -64,7 +61,6 @@
         .weight-btn:active { background-color: #dcedc8; transform: translateY(2px); box-shadow: none; }
         .weight-btn.selected { background: linear-gradient(145deg, #43a047, #2e7d32); color: white; border: none; box-shadow: 0 4px 8px rgba(46, 125, 50, 0.4); transform: scale(1.08); z-index: 2;}
 
-        /* 條件按鈕專用樣式 */
         .epi-condition-btn { width: 100%; text-align: left; font-size: 14px; padding: 12px; margin-bottom: 8px; background: #f5f5f5; color: #333; border: 2px solid #cfd8dc; border-radius: 8px; cursor: pointer; line-height: 1.5; transition: 0.2s; font-weight: bold;}
         .epi-condition-btn:active { transform: scale(0.98); }
         .epi-selected { background: #e8f5e9; border-color: #4caf50; color: #1b5e20; }
@@ -194,7 +190,6 @@
 </div>
 
 <script>
-    // --- Broselow & PAWPER 估算法 ---
     const broselowTable = [
         { h: 59,  w: 4,   color: "灰色 (Grey)", bg: "#9e9e9e", age: 0 },
         { h: 66,  w: 6.5, color: "粉色 (Pink)", bg: "#f48fb1", age: 0 },
@@ -240,11 +235,9 @@
 
         document.getElementById('weightInputPals').value = estimatedWeight;
         document.getElementById('ageInputPals').value = zone.age;
-        
         autoCalcPals();
     }
 
-    // --- LMA 判斷邏輯 ---
     function getLMA(weight) {
         if (weight <= 5) return { size: "1", cuff: "5", range: "小於 5 kg" };
         if (weight <= 10) return { size: "1½", cuff: "8", range: "5 - 10 kg" };
@@ -253,7 +246,6 @@
         return { size: "3", cuff: "30", range: "30 - 50 kg" };
     }
 
-    // --- 完整藥物資料庫 ---
     const ohcaDrugs = [
         { name: 'Epinephrine (1:10,000)', doseFormula: w => w * 0.01, volRatio: 10, max: 1, route: 'IV/IO', note: '👉準備 10cc空針。⚡抽 1cc EPI 再抽 9cc N/S，給予 0.1cc/kg 的量。每 3-5 分鐘一次。' },
         { name: 'Amiodarone', doseFormula: w => w * 5, volRatio: 0.02, max: 300, route: 'IV/IO', note: '👉準備 5cc空針。⚡不須稀釋，對於可電擊心率(pVT/VF)最多可重複 3 劑。' }
@@ -273,22 +265,8 @@
         '嚴重過敏': {
             isAdvanced: false,
             drugs: [
-                { 
-                    name: 'Epinephrine (1:1,000) 💉 IM', 
-                    doseFormula: w => w * 0.01, 
-                    volRatio: 1, 
-                    max: 0.3, 
-                    route: 'IM (肌肉注射)', 
-                    note: '👉 使用 <b>1cc空針</b> 抽取。<br>📍 <b>2歲以下：</b>大腿前外側 (Vastus lateralis)<br>📍 <b>2歲以上：</b>三角肌 (Deltoid)' 
-                },
-                {
-                    name: 'Epinephrine 💨 IH (霧化吸入)',
-                    doseFormula: w => w * 0.5,
-                    volRatio: 1, 
-                    max: function(age) { return age < 4 ? 2.5 : 5.0; },
-                    route: 'IH (Inhalation)',
-                    note: '👉 <b>適用時機：</b>若 Stridor 未改善可考慮。<br>⚠️ <b>最大劑量限制：</b><br>👶 &lt; 4歲：2.5 mg<br>👦 ≥ 4歲：5.0 mg'
-                }
+                { name: 'Epinephrine (1:1,000) 💉 IM', doseFormula: w => w * 0.01, volRatio: 1, max: 0.3, route: 'IM (肌肉注射)', note: '👉 使用 <b>1cc空針</b> 抽取。<br>📍 <b>2歲以下：</b>大腿前外側<br>📍 <b>2歲以上：</b>三角肌' },
+                { name: 'Epinephrine 💨 IH (霧化吸入)', doseFormula: w => w * 0.5, volRatio: 1, max: function(age) { return age < 4 ? 2.5 : 5.0; }, route: 'IH (Inhalation)', note: '👉 <b>適用時機：</b>若 Stridor 未改善可考慮。<br>⚠️ <b>最大劑量限制：</b><br>👶 &lt; 4歲：2.5 mg<br>👦 ≥ 4歲：5.0 mg' }
             ]
         },
         '氣喘': function(w, age) {
@@ -303,7 +281,7 @@
             return {
                 isAdvanced: false,
                 drugs: [
-                    { name: '短效支氣管擴張劑 (Berotec MDI)', route: 'MDI (協助使用)', hideDose: true, note: '👉 <b>適用對象：</b>有哮鳴聲之傷病患 (EMT 可執行)。<br>⚡ <b>給藥方式：</b>協助使用 <b>2 劑</b>，間隔 1 分鐘。<br>⏳ <b>後續：</b>若送醫超過 20 分鐘，每 20 分鐘可再次用藥。' },
+                    { name: '短效支氣管擴張劑 (Berotec MDI)', route: 'MDI (協助使用)', hideDose: true, note: '👉 <b>適用對象：</b>有哮鳴聲之傷病患。<br>⚡ <b>給藥方式：</b>協助使用 <b>2 劑</b>，間隔 1 分鐘。<br>⏳ <b>後續：</b>若送醫超過 20 分鐘，每 20 分鐘可再次用藥。' },
                     ihDrug
                 ]
             };
@@ -311,47 +289,25 @@
         '癲癇': {
             isAdvanced: false,
             isEpilepsy: true,
-            drugs: [ 
-                { 
-                    name: 'Midazolam (Dormicum)', 
-                    doseFormula: w => w * 0.2, 
-                    volRatio: 0.2, 
-                    max: 5, 
-                    route: 'IM', 
-                    note: '👉 使用 <b>1cc 或 3cc 空針</b> 抽取。<br>⚠️ 若 5 分鐘後仍有抽搐現象，可再重複 1 次劑量。' 
-                } 
-            ] 
+            drugs: [ { name: 'Midazolam (Dormicum)', doseFormula: w => w * 0.2, volRatio: 0.2, max: 5, route: 'IM', note: '👉 使用 <b>1cc 或 3cc 空針</b> 抽取。<br>⚠️ 若 5 分鐘後仍有抽搐現象，可再重複 1 次劑量。' } ] 
         },
         '低血糖': {
             isAdvanced: false,
             drugs: [
                 { 
-                    name: 'D10W (10% 葡萄糖水)', 
-                    doseFormula: null, 
-                    volFormula: w => Math.min(w * 5, 250), 
-                    route: 'IV / IO', 
+                    name: 'D10W (10% 葡萄糖水)', doseFormula: null, volFormula: w => Math.min(w * 5, 250), route: 'IV / IO', 
                     note: function(w, age) {
                         let totalVol = Math.min(w * 5, 250);
                         let syringeCount = Math.ceil(totalVol / 50);
                         let fullSyringes = Math.floor(totalVol / 50);
                         let remainder = totalVol % 50;
-
-                        let prepText = `👉 <b>給藥指引：</b>當血糖 <b>&lt; 60 mg/dl</b> 或測出 <b>LOW</b> 時給予。<br><br>` +
-                                       `🛠️ <b>【D10W 現場配置法】(若無原裝 D10W)：</b><br>` +
-                                       `需準備 <b><span style="color:#1565c0; font-size:18px;">${syringeCount}</span></b> 支 50cc 空針。<br>`;
-
-                        if (fullSyringes > 0) {
-                            prepText += `➤ <b>${fullSyringes} 支滿針：</b>每支抽 D50W <b>10cc</b> + N/S <b>40cc</b><br>`;
-                        }
+                        let prepText = `👉 <b>給藥指引：</b>當血糖 <b>&lt; 60 mg/dl</b> 或測出 <b>LOW</b> 時給予。<br><br>🛠️ <b>【D10W 現場配置法】(若無原裝)：</b><br>需準備 <b><span style="color:#1565c0; font-size:18px;">${syringeCount}</span></b> 支 50cc 空針。<br>`;
+                        if (fullSyringes > 0) prepText += `➤ <b>${fullSyringes} 支滿針：</b>每支抽 D50W <b>10cc</b> + N/S <b>40cc</b><br>`;
                         if (remainder > 0) {
                             let rD50 = Math.round((remainder / 5) * 10) / 10;
                             let rNS = Math.round((remainder - rD50) * 10) / 10;
                             prepText += `➤ <b>最後 1 支：</b>抽 D50W <b>${rD50}cc</b> + N/S <b>${rNS}cc</b><br>`;
                         }
-                        
-                        let totalD50 = Math.round((totalVol / 5) * 10) / 10;
-                        let totalNS = Math.round((totalVol - totalVol/5) * 10) / 10;
-                        prepText += `<div class="ref-text">💡 驗算總量：D50W ${totalD50}cc + N/S ${totalNS}cc = 總體積 ${totalVol}cc</div>`;
                         return prepText;
                     }
                 } 
@@ -360,16 +316,8 @@
         '發燒': {
             isAdvanced: false,
             isFever: true, 
-            drugs: [
-                { 
-                    name: 'Diclofenac (Voren 塞劑)', 
-                    hideDose: true, 
-                    route: 'Supp (直腸塞劑)', 
-                    note: '👉 <b>給藥劑量：</b>使用 <b>半顆 (6.25mg)</b><br>⚠️ <b>注意：</b>此藥物僅在體溫 ≥ 39°C 時才考慮使用。' 
-                } 
-            ] 
+            drugs: [ { name: 'Diclofenac (Voren 塞劑)', hideDose: true, route: 'Supp (直腸塞劑)', note: '👉 <b>給藥劑量：</b>使用 <b>半顆 (6.25mg)</b><br>⚠️ <b>注意：</b>此藥物僅在體溫 ≥ 39°C 時才考慮使用。' } ] 
         },
-
         'NRP_OHCA': [
             { name: 'Epinephrine (1:10,000) 💉 優先', doseFormula: w => w * 0.02, volRatio: 10, max: 99, route: 'IV/IO', note: '👉 準備 1cc空針。⚡ 抽 0.1cc EPI 再抽 0.9cc N/S，給予 0.2cc/kg 的量。' },
             { name: 'Epinephrine (1:10,000) ⚠️ 替代', doseFormula: w => w * 0.1, volRatio: 10, max: 99, route: 'ET (管內)', note: '👉 10cc空針。⚡ 抽 1cc EPI 再抽 9cc N/S，給予 1cc/kg 的量。' }
@@ -438,23 +386,13 @@
             }
         }
     }
-
     document.getElementById('weightInputPals').addEventListener('input', autoCalcPals);
     document.getElementById('ageInputPals').addEventListener('input', autoCalcPals);
 
     window.confirmCondition = function(btn, boxId) {
         let btns = btn.parentElement.querySelectorAll('button');
-        btns.forEach(b => {
-            b.classList.remove('epi-selected');
-            b.classList.remove('fever-selected');
-        });
-        
-        if (boxId === 'feverDrugsBox') {
-            btn.classList.add('fever-selected');
-        } else {
-            btn.classList.add('epi-selected');
-        }
-        
+        btns.forEach(b => { b.classList.remove('epi-selected'); b.classList.remove('fever-selected'); });
+        if (boxId === 'feverDrugsBox') { btn.classList.add('fever-selected'); } else { btn.classList.add('epi-selected'); }
         let drugBox = document.getElementById(boxId);
         drugBox.style.display = 'block';
         setTimeout(() => drugBox.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
@@ -464,18 +402,12 @@
         const resultBox = document.getElementById('resultBoxNrp');
         const resultContent = document.getElementById('resultContentNrp');
         document.getElementById('resultTitleNrp').innerText = `👶 新生兒 NRP | 體重: ${weight} kg`;
-        
         let html = '';
         drugData[conditionKey].forEach(function(drug) {
             let doseHtml = `<span class="drug-dose">${Math.round(drug.doseFormula(weight) * 1000) / 1000} mg</span>`;
             let vol = drug.volRatio ? (drug.doseFormula(weight) * drug.volRatio) : drug.volFormula(weight);
             let volHtml = `<span class="drug-vol">${Math.round(vol * 100) / 100} cc</span>`;
-            
-            html += `<div class="drug-item">
-                <div class="drug-name">${drug.name}</div>
-                <div>途徑: ${drug.route} | 應抽劑量: ${doseHtml} | 體積: ${volHtml}</div>
-                <div class="drug-note">${drug.note}</div>
-            </div>`;
+            html += `<div class="drug-item"><div class="drug-name">${drug.name}</div><div>途徑: ${drug.route} | 應抽劑量: ${doseHtml} | 體積: ${volHtml}</div><div class="drug-note">${drug.note}</div></div>`;
         });
         resultContent.innerHTML = html;
         resultBox.style.display = 'block';
@@ -484,22 +416,39 @@
     function renderPALS(conditionKey, weight, age) {
         const resultBox = document.getElementById('resultBox');
         const resultContent = document.getElementById('resultContent');
-        
         let rawData = drugData[conditionKey];
         const data = typeof rawData === 'function' ? rawData(weight, age) : rawData;
         
         document.getElementById('resultTitle').innerText = `👦 狀況：${conditionKey.replace('OHCA_', 'OHCA ')} | 體重: ${weight} kg | 年齡: ${age} 歲`;
-        
         let html = '';
 
+        // 🌟 智慧成人體型防呆警告
+        if (weight >= 40) {
+            html += `
+            <div class="flow-container" style="border-color: #d32f2f; margin-bottom:15px; background: #ffebee;">
+                <div class="flow-header" style="color: #b71c1c; border-bottom-color: #ef9a9a; font-size:16px;">🚨 體重超標 / 建議切換成人指引</div>
+                <div style="font-size: 14px; margin-bottom: 8px; color: #333; text-align: left; line-height: 1.5;">
+                    此傷病患體重 (<b>${weight} kg</b>) 已達大型兒童或成人標準。請確認輸入是否有誤（如：誤將體重填為身高）。<br><br>
+                    若數值無誤，強烈建議直接依 <b>「成人急救指引 (ACLS/BLS)」</b> 處置。<br>
+                    <span style="color: #c62828; font-weight: bold;">※ 本系統已自動啟動防呆，將所有藥物與電擊焦耳數「強制鎖死在成人最大安全上限」。</span>
+                </div>
+            </div>
+            `;
+        }
+
         if (data.isAdvanced) {
+            // 🌟 修正：電擊焦耳數獨立強制限縮最大值為 200J
+            let j1 = Math.min(weight * 2, 200);
+            let j2 = Math.min(weight * 4, 200);
+            let jMax = Math.min(weight * 10, 200);
+
             html += `<div class="drug-item" style="border-left-color: #e91e63;">
                 <div class="drug-name">🫀 CPR 指引</div>
                 <ul class="cpr-list"><li><b>姿勢：</b>${data.cpr.posture}</li><li><b>深度：</b>${data.cpr.depth}</li><li><b>AED：</b>${data.cpr.aed}</li><li><b>比例：</b>${data.cpr.ratio}</li></ul>
             </div>`;
             html += `<div class="drug-item" style="border-left-color: #ff9800;">
                 <div class="drug-name">⚡ 電擊 (2J / 4J / Max 10J)</div>
-                <div>首發: <span class="drug-dose">${weight * 2} J</span> | 次發: <span class="drug-dose">${weight * 4} J</span> | 最大: <span class="drug-dose">${Math.min(weight * 10, 200)} J</span></div>
+                <div>首發: <span class="drug-dose">${j1} J</span> | 次發: <span class="drug-dose">${j2} J</span> | 最大: <span class="drug-dose">${jMax} J</span></div>
             </div>`;
             let lma = getLMA(weight);
             html += `<div class="drug-item" style="border-left-color: #9c27b0;">
@@ -535,7 +484,6 @@
         const drugsToRender = data.isAdvanced ? data.drugs : (data.drugs || data);
         drugsToRender.forEach(function(drug) {
             let doseContainerHtml = '';
-
             if (!drug.hideDose) {
                 let doseHtml = '';
                 let isCapped = false;
@@ -544,18 +492,15 @@
 
                 if (drug.doseFormula) {
                     dose = drug.doseFormula(weight);
-                    
                     if (typeof drug.max === 'function') {
                         currentMax = drug.max(age);
                     } else if (typeof drug.max !== 'undefined') {
                         currentMax = drug.max;
                     }
-
                     if (currentMax !== null && dose > currentMax) {
                         dose = currentMax;
                         isCapped = true;
                     }
-                    
                     doseHtml = `應給劑量: <span class="drug-dose">${Math.round(dose * 1000) / 1000} mg</span>`;
                     if (isCapped) {
                         doseHtml += `<br><span style="color:#d32f2f; font-size:14px; font-weight:bold;">(⚠️ 已達最大安全上限 ${currentMax} mg)</span>`;
@@ -578,19 +523,10 @@
             }
 
             let noteContent = typeof drug.note === 'function' ? drug.note(weight, age) : drug.note;
-
-            html += `<div class="drug-item">
-                <div class="drug-name">💊 ${drug.name}</div>
-                <div>途徑: <b>${drug.route}</b></div>
-                ${doseContainerHtml}
-                <div class="drug-note">📝 備註:<br> ${noteContent}</div>
-            </div>`;
+            html += `<div class="drug-item"><div class="drug-name">💊 ${drug.name}</div><div>途徑: <b>${drug.route}</b></div>${doseContainerHtml}<div class="drug-note">📝 備註:<br> ${noteContent}</div></div>`;
         });
 
-        if (data.isEpilepsy || data.isFever) {
-            html += `</div>`; 
-        }
-
+        if (data.isEpilepsy || data.isFever) { html += `</div>`; }
         resultContent.innerHTML = html;
         resultBox.style.display = 'block';
     }
