@@ -7,53 +7,47 @@
     <style>
         body { 
             font-family: 'Helvetica Neue', Arial, Microsoft JhengHei, sans-serif; 
-            padding: 15px; 
-            margin: 0;
+            padding: 15px; margin: 0;
             background: linear-gradient(135deg, #e0f2f1 0%, #e8eaf6 100%);
             min-height: 100vh;
         }
-        
         .container { 
-            max-width: 500px; 
-            margin: auto; 
-            background: rgba(255, 255, 255, 0.96); 
-            padding: 20px; 
-            border-radius: 12px; 
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08); 
-            border-top: 6px solid #00897b;
+            max-width: 500px; margin: auto; background: rgba(255, 255, 255, 0.96); 
+            padding: 20px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-top: 6px solid #00897b;
         }
-        
         h1 { text-align: center; color: #263238; font-size: 26px; margin-bottom: 5px; font-weight: 900; letter-spacing: 2px;}
         .warning { background-color: #ffebee; color: #c62828; padding: 10px; border-radius: 8px; font-size: 13px; margin-bottom: 20px; font-weight: bold; text-align: center; border-left: 4px solid #d32f2f;}
         
-        .tab-container { display: flex; margin-bottom: 20px; border-radius: 8px; overflow: hidden; border: 2px solid #1976d2; box-shadow: 0 2px 6px rgba(25,118,210,0.15);}
-        .tab-btn { flex: 1; padding: 12px; font-size: 16px; font-weight: bold; text-align: center; cursor: pointer; border: none; background-color: white; color: #1976d2; transition: all 0.3s ease; }
+        /* 估算區塊樣式 */
+        .estimation-panel {
+            background: #f1f8e9; border: 2px dashed #81c784; border-radius: 10px;
+            padding: 15px; margin-bottom: 15px; display: none; animation: fadeIn 0.4s;
+        }
+        .est-title { font-weight: bold; color: #2e7d32; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+        .habitus-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0; }
+        .habitus-btn { padding: 8px 0; font-size: 13px; font-weight: bold; border: 1px solid #c8e6c9; border-radius: 6px; background: white; cursor: pointer; text-align: center; }
+        .habitus-btn.active { background: #4caf50; color: white; border-color: #388e3c; }
+
+        .tab-container { display: flex; margin-bottom: 20px; border-radius: 8px; overflow: hidden; border: 2px solid #1976d2; }
+        .tab-btn { flex: 1; padding: 12px; font-size: 16px; font-weight: bold; text-align: center; cursor: pointer; border: none; background: white; color: #1976d2; }
         .tab-btn.active { background: linear-gradient(145deg, #1e88e5, #1565c0); color: white; }
         
         .section { display: none; }
-        .section.active { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .section.active { display: block; }
 
-        /* 雙輸入框 */
-        .input-group { display: flex; gap: 15px; margin-bottom: 15px; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-end;}
         .input-field { flex: 1; }
-        .input-field label { font-size: 15px; font-weight: bold; display: block; margin-bottom: 8px; color: #37474f; }
-        .input-field input { width: 100%; padding: 15px; font-size: 22px; border: 2px solid #b0bec5; border-radius: 8px; box-sizing: border-box; text-align: center; background-color: #fafafa; transition: 0.3s; }
+        .input-field label { font-size: 14px; font-weight: bold; display: block; margin-bottom: 5px; color: #37474f; }
+        .input-field input { width: 100%; padding: 12px; font-size: 20px; border: 2px solid #b0bec5; border-radius: 8px; box-sizing: border-box; text-align: center; background-color: #fafafa; transition: 0.3s;}
         .input-field input:focus { border-color: #1976d2; outline: none; background-color: #fff; box-shadow: 0 0 8px rgba(25,118,210,0.2); }
+        .est-trigger-btn { padding: 12px 10px; background: #546e7a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; white-space: nowrap; height: 50px;}
         .input-hint { font-size: 12px; color: #78909c; text-align: center; margin-top: 4px; }
 
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
         button.action-btn { padding: 14px 10px; font-size: 16px; font-weight: bold; color: white; background: linear-gradient(145deg, #546e7a, #37474f); border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s;}
         button.action-btn:active { transform: scale(0.96); box-shadow: none;}
-        
-        /* 🌟 介面優化：將 OHCA 按鈕換成黑色 */
         button.ohca { background: linear-gradient(145deg, #424242, #000000); font-size: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #000;}
         button.ohca:active { background: #000; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
-
-        .weight-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 25px; }
-        .weight-btn { padding: 14px 0; font-size: 17px; font-weight: bold; background-color: #f1f8e9; color: #33691e; border: 1px solid #c5e1a5; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.2s ease; box-shadow: 0 2px 0 #dcedc8;}
-        .weight-btn:active { background-color: #dcedc8; transform: translateY(2px); box-shadow: none; }
-        .weight-btn.selected { background: linear-gradient(145deg, #43a047, #2e7d32); color: white; border: none; box-shadow: 0 4px 8px rgba(46, 125, 50, 0.4); transform: scale(1.08); z-index: 2;}
 
         .result-box { background-color: #f3f8f5; padding: 15px; border-radius: 10px; border: 1px solid #a5d6a7; display: none; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(76,175,80,0.1);}
         .result-title { font-size: 18px; font-weight: bold; margin-bottom: 12px; color: #1b5e20; border-bottom: 2px dashed #c8e6c9; padding-bottom: 8px;}
@@ -63,6 +57,11 @@
         .drug-vol { color: #1565c0; font-weight: 900; font-size: 24px; }
         .drug-note { font-size: 14px; color: #333; margin-top: 10px; background-color: #fff8e1; padding: 10px; border-radius: 6px; line-height: 1.6; border: 1px solid #ffecb3;}
         
+        .weight-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 25px; }
+        .weight-btn { padding: 14px 0; font-size: 17px; font-weight: bold; background-color: #f1f8e9; color: #33691e; border: 1px solid #c5e1a5; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.2s ease; box-shadow: 0 2px 0 #dcedc8;}
+        .weight-btn:active { background-color: #dcedc8; transform: translateY(2px); box-shadow: none; }
+        .weight-btn.selected { background: linear-gradient(145deg, #43a047, #2e7d32); color: white; border: none; box-shadow: 0 4px 8px rgba(46, 125, 50, 0.4); transform: scale(1.08); z-index: 2;}
+
         /* 條件按鈕專用樣式 */
         .epi-condition-btn { width: 100%; text-align: left; font-size: 14px; padding: 12px; margin-bottom: 8px; background: #f5f5f5; color: #333; border: 2px solid #cfd8dc; border-radius: 8px; cursor: pointer; line-height: 1.5; transition: 0.2s; font-weight: bold;}
         .epi-condition-btn:active { transform: scale(0.98); }
@@ -89,6 +88,8 @@
         
         ul.cpr-list { margin: 8px 0 0 0; padding-left: 20px; font-size: 15px; color: #333; line-height: 1.6; }
         ul.cpr-list li { margin-bottom: 4px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -105,21 +106,39 @@
     <div id="palsSection" class="section active">
         
         <div class="input-group">
-            <div class="input-field">
+            <div class="input-field" style="flex: 2;">
                 <label for="weightInputPals">孩童體重 (kg)</label>
                 <input type="number" id="weightInputPals" placeholder="例如: 15" inputmode="decimal">
             </div>
+            <button class="est-trigger-btn" onclick="toggleEstimation()">❓ 估算</button>
+            <div class="input-field" style="flex: 1.5;">
+                <label for="ageInputPals">年齡 (歲)</label>
+                <input type="number" id="ageInputPals" placeholder="歲" inputmode="decimal">
+                <div class="input-hint">(未滿1歲填 0)</div>
+            </div>
+        </div>
+
+        <div id="estimationPanel" class="estimation-panel">
+            <div class="est-title">📏 Broselow / PAWPER 估算法</div>
             <div class="input-field">
-                <label for="ageInputPals">孩童年齡 (歲)</label>
-                <input type="number" id="ageInputPals" placeholder="例如: 3" inputmode="decimal">
-                <div class="input-hint">(未滿 1 歲請輸入 0)</div>
+                <label>測量身高 (cm)</label>
+                <input type="number" id="heightInput" placeholder="輸入身高 (如 110)" oninput="runPawperEstimation()" inputmode="decimal">
+            </div>
+            <label style="font-size: 13px; font-weight: bold; margin-top:10px; display:block;">評估體型 (Habitus)</label>
+            <div class="habitus-grid">
+                <button class="habitus-btn" onclick="selectHabitus(0.8, this)">瘦</button>
+                <button class="habitus-btn active" onclick="selectHabitus(1.0, this)">正常</button>
+                <button class="habitus-btn" onclick="selectHabitus(1.2, this)">胖</button>
+                <button class="habitus-btn" onclick="selectHabitus(1.4, this)">極胖</button>
+            </div>
+            <div id="pawperResult" style="font-size: 14px; margin-top: 10px; padding: 10px; border-radius: 5px; text-align:center; font-weight:bold; background: #e0e0e0; color: #333;">
+                請輸入身高以計算...
             </div>
         </div>
 
         <div class="btn-grid">
             <button class="action-btn ohca" onclick="calculatePals('OHCA_嬰兒')">OHCA 嬰兒<br><span style="font-size:13px; font-weight:normal;">(1歲以下)</span></button>
             <button class="action-btn ohca" onclick="calculatePals('OHCA_小兒')">OHCA 小兒<br><span style="font-size:13px; font-weight:normal;">(1歲~青春期)</span></button>
-            
             <button class="action-btn" style="background: linear-gradient(145deg, #fb8c00, #ef6c00);" onclick="calculatePals('嚴重過敏')">嚴重過敏</button>
             <button class="action-btn" style="background: linear-gradient(145deg, #43a047, #2e7d32);" onclick="calculatePals('氣喘')">氣喘</button>
             <button class="action-btn" style="background: linear-gradient(145deg, #8e24aa, #6a1b9a);" onclick="calculatePals('癲癇')">癲癇</button>
@@ -173,6 +192,57 @@
 </div>
 
 <script>
+    // --- Broselow & PAWPER 估算法 ---
+    const broselowTable = [
+        { h: 59,  w: 4,   color: "灰色 (Grey)", bg: "#9e9e9e", age: 0 },
+        { h: 66,  w: 6.5, color: "粉色 (Pink)", bg: "#f48fb1", age: 0 },
+        { h: 78,  w: 8.5, color: "紅色 (Red)", bg: "#ef5350", age: 1 },
+        { h: 88,  w: 10.5,color: "紫色 (Purple)", bg: "#ba68c8", age: 1 },
+        { h: 103, w: 13,  color: "黃色 (Yellow)", bg: "#ffd600", age: 2 },
+        { h: 117, w: 16.5,color: "白色 (White)", bg: "#ffffff", age: 4 },
+        { h: 129, w: 21,  color: "藍色 (Blue)", bg: "#42a5f5", age: 6 },
+        { h: 145, w: 26.5,color: "橘色 (Orange)", bg: "#ff9800", age: 8 },
+        { h: 150, w: 33,  color: "綠色 (Green)", bg: "#4caf50", age: 10 }
+    ];
+
+    let currentHabitusMultiplier = 1.0;
+
+    function toggleEstimation() {
+        const panel = document.getElementById('estimationPanel');
+        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function selectHabitus(multiplier, btn) {
+        document.querySelectorAll('.habitus-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentHabitusMultiplier = multiplier;
+        runPawperEstimation();
+    }
+
+    function runPawperEstimation() {
+        const h = parseFloat(document.getElementById('heightInput').value);
+        const resDiv = document.getElementById('pawperResult');
+        if (!h) {
+            resDiv.innerHTML = "請輸入身高以計算...";
+            resDiv.style.backgroundColor = "#e0e0e0";
+            resDiv.style.color = "#333";
+            return;
+        }
+
+        let zone = broselowTable.find(z => h <= z.h) || broselowTable[broselowTable.length - 1];
+        let estimatedWeight = Math.round(zone.w * currentHabitusMultiplier * 10) / 10;
+        
+        resDiv.style.backgroundColor = zone.bg;
+        resDiv.style.color = (zone.bg === "#ffffff" || zone.bg === "#ffd600") ? "black" : "white";
+        resDiv.innerHTML = `Broselow 區域：${zone.color} <br> 預估體重：<b>${estimatedWeight} kg</b>`;
+
+        document.getElementById('weightInputPals').value = estimatedWeight;
+        document.getElementById('ageInputPals').value = zone.age;
+        
+        autoCalcPals();
+    }
+
+    // --- LMA 判斷邏輯 ---
     function getLMA(weight) {
         if (weight <= 5) return { size: "1", cuff: "5", range: "小於 5 kg" };
         if (weight <= 10) return { size: "1½", cuff: "8", range: "5 - 10 kg" };
@@ -181,6 +251,7 @@
         return { size: "3", cuff: "30", range: "30 - 50 kg" };
     }
 
+    // --- 完整藥物資料庫 (整合所有功能) ---
     const ohcaDrugs = [
         { name: 'Epinephrine (1:10,000)', doseFormula: w => w * 0.01, volRatio: 10, max: 1, route: 'IV/IO', note: '👉準備 10cc空針。⚡抽 1cc EPI 再抽 9cc N/S，給予 0.1cc/kg 的量。每 3-5 分鐘一次。' },
         { name: 'Amiodarone', doseFormula: w => w * 5, volRatio: 0.02, max: 300, route: 'IV/IO', note: '👉準備 5cc空針。⚡不須稀釋，對於可電擊心率(pVT/VF)最多可重複 3 劑。' }
@@ -205,7 +276,7 @@
                     doseFormula: w => w * 0.01, 
                     volRatio: 1, 
                     max: 0.3, 
-                    route: 'IM', 
+                    route: 'IM (肌肉注射)', 
                     note: '👉 使用 <b>1cc空針</b> 抽取。<br>📍 <b>2歲以下：</b>大腿前外側 (Vastus lateralis)<br>📍 <b>2歲以上：</b>三角肌 (Deltoid)' 
                 },
                 {
@@ -213,7 +284,7 @@
                     doseFormula: w => w * 0.5,
                     volRatio: 1, 
                     max: function(age) { return age < 4 ? 2.5 : 5.0; },
-                    route: 'IH',
+                    route: 'IH (Inhalation)',
                     note: '👉 <b>適用時機：</b>若 Stridor 未改善可考慮。<br>⚠️ <b>最大劑量限制：</b><br>👶 &lt; 4歲：2.5 mg<br>👦 ≥ 4歲：5.0 mg'
                 }
             ]
@@ -230,7 +301,7 @@
             return {
                 isAdvanced: false,
                 drugs: [
-                    { name: '短效支氣管擴張劑 (Berotec MDI)', route: 'MDI (協助使用)', hideDose: true, note: '👉 <b>適用對象：</b>有哮鳴聲之傷病患 (EMT 可執行)。<br>⚡ <b>給藥方式：</b>協助使用 <b>2 劑</b>，間隔 1 分鐘。<br>⏳ <b>後續：</b>若送醫超過 20 分鐘，每 20 分鐘可再次用藥. Berotec 已下市，改用 Ventolin MDI。' },
+                    { name: '短效支氣管擴張劑 (Berotec MDI)', route: 'MDI (協助使用)', hideDose: true, note: '👉 <b>適用對象：</b>有哮鳴聲之傷病患 (EMT 可執行)。<br>⚡ <b>給藥方式：</b>協助使用 <b>2 劑</b>，間隔 1 分鐘。<br>⏳ <b>後續：</b>若送醫超過 20 分鐘，每 20 分鐘可再次用藥。' },
                     ihDrug
                 ]
             };
@@ -242,9 +313,9 @@
                 { 
                     name: 'Midazolam (Dormicum)', 
                     doseFormula: w => w * 0.2, 
-                    volRatio: 0.2, // 5mg = 1cc, 所以 1mg 是 0.2cc
+                    volRatio: 0.2, 
                     max: 5, 
-                    route: 'IM', // 改成只有 IM
+                    route: 'IM', 
                     note: '👉 使用 <b>1cc 或 3cc 空針</b> 抽取。<br>⚠️ 若 5 分鐘後仍有抽搐現象，可再重複 1 次劑量。' 
                 } 
             ] 
@@ -298,11 +369,12 @@
         },
 
         'NRP_OHCA': [
-            { name: 'Epinephrine (1:10,000) 優先', doseFormula: w => w * 0.02, volRatio: 10, max: 99, route: 'IV/IO', note: '👉 準備 1cc空針。 抽 0.1cc EPI 再抽 0.9cc N/S，給予 0.2cc/kg 的量。' },
-            { name: 'Epinephrine (1:10,000) 替代', doseFormula: w => w * 0.1, volRatio: 10, max: 99, route: 'ET (管內)', note: '👉 10cc空針。 抽 1cc EPI 再抽 9cc N/S，給予 1cc/kg 的量。' }
+            { name: 'Epinephrine (1:10,000) 💉 優先', doseFormula: w => w * 0.02, volRatio: 10, max: 99, route: 'IV/IO', note: '👉 準備 1cc空針。⚡ 抽 0.1cc EPI 再抽 0.9cc N/S，給予 0.2cc/kg 的量。' },
+            { name: 'Epinephrine (1:10,000) ⚠️ 替代', doseFormula: w => w * 0.1, volRatio: 10, max: 99, route: 'ET (管內)', note: '👉 10cc空針。⚡ 抽 1cc EPI 再抽 9cc N/S，給予 1cc/kg 的量。' }
         ]
     };
 
+    // --- 初始化與切換邏輯 ---
     function initNrpWeights() {
         let grid = document.getElementById('nrpWeightGrid');
         let html = '';
@@ -339,11 +411,11 @@
         const ageStr = document.getElementById('ageInputPals').value;
 
         if (weightStr === '' || parseFloat(weightStr) <= 0) {
-            alert('🚨 嗶嗶！請先輸入正確的孩童體重！');
+            alert('🚨 嗶嗶！請先輸入正確的孩童體重！\n(如果不知道體重，可點選「❓ 估算」按鈕測量身高喔！)');
             return;
         }
         if (ageStr === '' || parseFloat(ageStr) < 0) {
-            alert('🚨 嗶嗶！請輸入孩童年齡！(未滿1歲請輸入 0)');
+            alert('🚨 嗶嗶！請輸入孩童年齡！(未滿1歲請輸入 0)\n(如果不確定，可點選「❓ 估算」讓系統幫您抓大約歲數喔！)');
             return;
         }
         
@@ -365,6 +437,7 @@
             }
         }
     }
+
     document.getElementById('weightInputPals').addEventListener('input', autoCalcPals);
     document.getElementById('ageInputPals').addEventListener('input', autoCalcPals);
 
