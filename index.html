@@ -45,8 +45,19 @@
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
         button.action-btn { padding: 14px 10px; font-size: 16px; font-weight: bold; color: white; background: linear-gradient(145deg, #546e7a, #37474f); border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s;}
         button.action-btn:active { transform: scale(0.96); box-shadow: none;}
-        button.ohca { background: linear-gradient(145deg, #424242, #000000); font-size: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #000;}
+        
+        button.ohca { background: linear-gradient(145deg, #424242, #000000); font-size: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #000; transition: 0.3s;}
         button.ohca:active { background: #000; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+        
+        /* 🌟 新增：被鎖定的 OHCA 按鈕樣式 */
+        button.ohca:disabled { 
+            background: #e0e0e0; 
+            color: #9e9e9e; 
+            border-color: #bdbdbd; 
+            cursor: not-allowed; 
+            box-shadow: none;
+            transform: none;
+        }
 
         .result-box { background-color: #f3f8f5; padding: 15px; border-radius: 10px; border: 1px solid #a5d6a7; display: none; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(76,175,80,0.1);}
         .result-title { font-size: 18px; font-weight: bold; margin-bottom: 12px; color: #1b5e20; border-bottom: 2px dashed #c8e6c9; padding-bottom: 8px;}
@@ -111,7 +122,7 @@
             <button class="est-trigger-btn" onclick="toggleEstimation()">❓ 估算</button>
             <div class="input-field" style="flex: 1.5;">
                 <label for="ageInputPals">年齡 (歲)</label>
-                <input type="number" id="ageInputPals" placeholder="歲" inputmode="decimal" step="any">
+                <input type="number" id="ageInputPals" placeholder="歲" inputmode="decimal" step="any" oninput="checkOhcaButtons()">
                 <div class="input-hint">(未滿1歲填 0)</div>
             </div>
         </div>
@@ -135,8 +146,9 @@
         </div>
 
         <div class="btn-grid">
-            <button class="action-btn ohca" onclick="calculatePals('OHCA_嬰兒')">OHCA 嬰兒<br><span style="font-size:13px; font-weight:normal;">(1歲以下)</span></button>
-            <button class="action-btn ohca" onclick="calculatePals('OHCA_小兒')">OHCA 小兒<br><span style="font-size:13px; font-weight:normal;">(1歲~青春期)</span></button>
+            <button id="btnOhcaInfant" class="action-btn ohca" onclick="calculatePals('OHCA_嬰兒')">OHCA 嬰兒<br><span style="font-size:13px; font-weight:normal;">(1歲以下)</span></button>
+            <button id="btnOhcaChild" class="action-btn ohca" onclick="calculatePals('OHCA_小兒')">OHCA 小兒<br><span style="font-size:13px; font-weight:normal;">(1歲~青春期)</span></button>
+            
             <button class="action-btn" style="background: linear-gradient(145deg, #fb8c00, #ef6c00);" onclick="calculatePals('嚴重過敏')">嚴重過敏</button>
             <button class="action-btn" style="background: linear-gradient(145deg, #43a047, #2e7d32);" onclick="calculatePals('氣喘')">氣喘</button>
             <button class="action-btn" style="background: linear-gradient(145deg, #8e24aa, #6a1b9a);" onclick="calculatePals('癲癇')">癲癇</button>
@@ -221,6 +233,36 @@
         runPawperEstimation();
     }
 
+    // 🌟 年齡防呆：動態鎖定/解鎖 OHCA 按鈕
+    function checkOhcaButtons() {
+        const ageStr = document.getElementById('ageInputPals').value;
+        const btnInfant = document.getElementById('btnOhcaInfant');
+        const btnChild = document.getElementById('btnOhcaChild');
+
+        if (ageStr === '') {
+            // 沒輸入年齡，全部解鎖
+            btnInfant.disabled = false;
+            btnChild.disabled = false;
+        } else {
+            const age = parseFloat(ageStr);
+            if (age < 1) {
+                // 0 歲：只能按嬰兒，鎖定小兒
+                btnInfant.disabled = false;
+                btnChild.disabled = true;
+            } else if (age === 1) {
+                // 1 歲：交界期，兩個都解鎖
+                btnInfant.disabled = false;
+                btnChild.disabled = false;
+            } else {
+                // 大於 1 歲：只能按小兒，鎖定嬰兒
+                btnInfant.disabled = true;
+                btnChild.disabled = false;
+            }
+        }
+        // 如果有填資料，觸發自動計算
+        autoCalcPals();
+    }
+
     function runPawperEstimation() {
         const h = parseFloat(document.getElementById('heightInput').value);
         const resDiv = document.getElementById('pawperResult');
@@ -232,15 +274,15 @@
             return;
         }
 
-        // 🌟 超出 Broselow 量尺極限（大於 150 cm）的防呆阻斷
         if (h > 150) {
             resDiv.innerHTML = "🚨 <b>身高超過 150 cm！</b><br>已超出兒童量尺範圍，建議使用成人指引。";
             resDiv.style.backgroundColor = "#ffebee";
             resDiv.style.color = "#c62828";
-            // 阻斷計算，並清空下方數值以免同仁誤按
             document.getElementById('weightInputPals').value = '';
             document.getElementById('ageInputPals').value = '';
             document.getElementById('resultBox').style.display = 'none';
+            // 觸發防呆檢查，恢復按鈕狀態
+            checkOhcaButtons();
             return;
         }
 
@@ -253,7 +295,9 @@
 
         document.getElementById('weightInputPals').value = estimatedWeight;
         document.getElementById('ageInputPals').value = zone.age;
-        autoCalcPals();
+        
+        // 🌟 估算完年齡後，立刻執行一次防呆檢查
+        checkOhcaButtons();
     }
 
     function getLMA(weight) {
@@ -406,8 +450,6 @@
             }
         }
     }
-    document.getElementById('weightInputPals').addEventListener('input', autoCalcPals);
-    document.getElementById('ageInputPals').addEventListener('input', autoCalcPals);
 
     window.confirmCondition = function(btn, boxId) {
         let btns = btn.parentElement.querySelectorAll('button');
