@@ -35,13 +35,15 @@
         .section { display: none; }
         .section.active { display: block; }
 
-        .input-group { display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-end;}
-        .input-field { flex: 1; }
+        /* 🌟 強迫症治癒區：雙輸入框完美對齊排版 */
+        .input-group { display: flex; gap: 10px; margin-bottom: 30px; align-items: flex-end;}
+        .input-field { flex: 1; position: relative; } /* 加入 position: relative 讓提示字懸空定位 */
         .input-field label { font-size: 14px; font-weight: bold; display: block; margin-bottom: 5px; color: #37474f; }
         .input-field input { width: 100%; padding: 12px; font-size: 20px; border: 2px solid #b0bec5; border-radius: 8px; box-sizing: border-box; text-align: center; background-color: #fafafa; transition: 0.3s;}
         .input-field input:focus { border-color: #1976d2; outline: none; background-color: #fff; box-shadow: 0 0 8px rgba(25,118,210,0.2); }
         .est-trigger-btn { padding: 12px 10px; background: #546e7a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; white-space: nowrap; height: 50px;}
-        .input-hint { font-size: 12px; color: #78909c; text-align: center; margin-top: 4px; }
+        /* 懸空的小提示字，不再干擾上方對齊 */
+        .input-hint { position: absolute; top: 100%; left: 0; width: 100%; font-size: 12px; color: #78909c; text-align: center; margin-top: 4px; }
 
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
         button.action-btn { padding: 14px 10px; font-size: 16px; font-weight: bold; color: white; background: linear-gradient(145deg, #546e7a, #37474f); border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s;}
@@ -251,7 +253,7 @@
         return { size: "3", cuff: "30", range: "30 - 50 kg" };
     }
 
-    // --- 完整藥物資料庫 (整合所有功能) ---
+    // --- 完整藥物資料庫 ---
     const ohcaDrugs = [
         { name: 'Epinephrine (1:10,000)', doseFormula: w => w * 0.01, volRatio: 10, max: 1, route: 'IV/IO', note: '👉準備 10cc空針。⚡抽 1cc EPI 再抽 9cc N/S，給予 0.1cc/kg 的量。每 3-5 分鐘一次。' },
         { name: 'Amiodarone', doseFormula: w => w * 5, volRatio: 0.02, max: 300, route: 'IV/IO', note: '👉準備 5cc空針。⚡不須稀釋，對於可電擊心率(pVT/VF)最多可重複 3 劑。' }
@@ -374,7 +376,6 @@
         ]
     };
 
-    // --- 初始化與切換邏輯 ---
     function initNrpWeights() {
         let grid = document.getElementById('nrpWeightGrid');
         let html = '';
