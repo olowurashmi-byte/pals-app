@@ -5,98 +5,120 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PH-PLS 金刀板</title>
     <style>
+        /* 🌟 整體背景與字體優化 */
         body { 
-            font-family: 'Helvetica Neue', Arial, Microsoft JhengHei, sans-serif; 
+            font-family: 'Helvetica Neue', Arial, 'PingFang TC', 'Microsoft JhengHei', sans-serif; 
             padding: 15px; margin: 0;
-            background: linear-gradient(135deg, #e0f2f1 0%, #e8eaf6 100%);
+            background: linear-gradient(135deg, #e0f2f1 0%, #cfd8dc 100%);
             min-height: 100vh;
+            color: #263238;
         }
-        .container { 
-            max-width: 500px; margin: auto; background: rgba(255, 255, 255, 0.96); 
-            padding: 20px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-top: 6px solid #00897b;
-        }
-        h1 { text-align: center; color: #263238; font-size: 26px; margin-bottom: 5px; font-weight: 900; letter-spacing: 2px;}
-        .warning { background-color: #ffebee; color: #c62828; padding: 10px; border-radius: 8px; font-size: 13px; margin-bottom: 20px; font-weight: bold; text-align: center; border-left: 4px solid #d32f2f;}
         
-        .estimation-panel {
-            background: #f1f8e9; border: 2px dashed #81c784; border-radius: 10px;
-            padding: 15px; margin-bottom: 15px; display: none; animation: fadeIn 0.4s;
+        /* 🌟 主容器加大圓角與柔和陰影 */
+        .container { 
+            max-width: 500px; margin: auto; background: rgba(255, 255, 255, 0.98); 
+            padding: 25px 20px; border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
+            border-top: 8px solid #00897b;
         }
-        .est-title { font-weight: bold; color: #2e7d32; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
-        .habitus-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0; }
-        .habitus-btn { padding: 8px 0; font-size: 13px; font-weight: bold; border: 1px solid #c8e6c9; border-radius: 6px; background: white; cursor: pointer; text-align: center; }
-        .habitus-btn.active { background: #4caf50; color: white; border-color: #388e3c; }
-
-        .tab-container { display: flex; margin-bottom: 20px; border-radius: 8px; overflow: hidden; border: 2px solid #1976d2; }
-        .tab-btn { flex: 1; padding: 12px; font-size: 16px; font-weight: bold; text-align: center; cursor: pointer; border: none; background: white; color: #1976d2; }
-        .tab-btn.active { background: linear-gradient(145deg, #1e88e5, #1565c0); color: white; }
+        
+        h1 { text-align: center; color: #263238; font-size: 28px; margin-top: 0; margin-bottom: 8px; font-weight: 900; letter-spacing: 2px;}
+        .warning { background-color: #ffebee; color: #c62828; padding: 12px; border-radius: 10px; font-size: 13px; margin-bottom: 25px; font-weight: bold; text-align: center; border-left: 4px solid #d32f2f; letter-spacing: 0.5px;}
+        
+        /* 🌟 頁籤設計優化 */
+        .tab-container { display: flex; margin-bottom: 25px; border-radius: 12px; overflow: hidden; background: #e3f2fd; padding: 4px;}
+        .tab-btn { flex: 1; padding: 12px; font-size: 16px; font-weight: bold; text-align: center; cursor: pointer; border: none; background: transparent; color: #1976d2; border-radius: 8px; transition: 0.3s;}
+        .tab-btn.active { background: #1976d2; color: white; box-shadow: 0 2px 8px rgba(25,118,210,0.3); }
         
         .section { display: none; }
-        .section.active { display: block; }
+        .section.active { display: block; animation: fadeIn 0.4s ease-out; }
 
-        .input-group { display: flex; gap: 10px; margin-bottom: 30px; align-items: flex-end;}
+        /* 🌟 現代化輸入框設計 (iOS/Material 風格) */
+        .input-group { display: flex; gap: 12px; margin-bottom: 30px; align-items: flex-end;}
         .input-field { flex: 1; position: relative; } 
-        .input-field label { font-size: 14px; font-weight: bold; display: block; margin-bottom: 5px; color: #37474f; }
-        .input-field input { width: 100%; padding: 12px; font-size: 20px; border: 2px solid #b0bec5; border-radius: 8px; box-sizing: border-box; text-align: center; background-color: #fafafa; transition: 0.3s;}
-        .input-field input:focus { border-color: #1976d2; outline: none; background-color: #fff; box-shadow: 0 0 8px rgba(25,118,210,0.2); }
-        .est-trigger-btn { padding: 12px 10px; background: #546e7a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; white-space: nowrap; height: 50px;}
-        .input-hint { position: absolute; top: 100%; left: 0; width: 100%; font-size: 12px; color: #78909c; text-align: center; margin-top: 4px; }
-
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
-        button.action-btn { padding: 14px 10px; font-size: 16px; font-weight: bold; color: white; background: linear-gradient(145deg, #546e7a, #37474f); border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s;}
-        button.action-btn:active { transform: scale(0.96); box-shadow: none;}
-        
-        button.ohca { background: linear-gradient(145deg, #424242, #000000); font-size: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #000; transition: 0.3s;}
-        button.ohca:active { background: #000; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
-        
-        /* 🌟 新增：被鎖定的 OHCA 按鈕樣式 */
-        button.ohca:disabled { 
-            background: #e0e0e0; 
-            color: #9e9e9e; 
-            border-color: #bdbdbd; 
-            cursor: not-allowed; 
-            box-shadow: none;
-            transform: none;
+        .input-field label { font-size: 14px; font-weight: bold; display: block; margin-bottom: 8px; color: #455a64; }
+        .input-field input { 
+            width: 100%; padding: 14px; font-size: 22px; font-weight: bold; color: #263238;
+            border: none; border-radius: 12px; box-sizing: border-box; text-align: center; 
+            background-color: #f0f4f8; box-shadow: inset 0 2px 4px rgba(0,0,0,0.04);
+            transition: all 0.3s ease;
         }
+        .input-field input:focus { 
+            background-color: #fff; outline: none;
+            box-shadow: 0 0 0 3px #bbdefb, 0 4px 12px rgba(0,0,0,0.08); 
+        }
+        .input-hint { position: absolute; top: 100%; left: 0; width: 100%; font-size: 12px; color: #90a4ae; text-align: center; margin-top: 6px; font-weight: bold;}
 
-        .result-box { background-color: #f3f8f5; padding: 15px; border-radius: 10px; border: 1px solid #a5d6a7; display: none; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(76,175,80,0.1);}
-        .result-title { font-size: 18px; font-weight: bold; margin-bottom: 12px; color: #1b5e20; border-bottom: 2px dashed #c8e6c9; padding-bottom: 8px;}
-        .drug-item { margin-bottom: 15px; font-size: 15px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border-left: 5px solid #1976d2;}
-        .drug-name { font-weight: 800; color: #212121; font-size: 17px; margin-bottom: 8px;}
+        /* 估算按鈕優化 */
+        .est-trigger-btn { 
+            padding: 14px 12px; background: linear-gradient(145deg, #546e7a, #455a64); 
+            color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; 
+            white-space: nowrap; height: 54px; box-shadow: 0 4px 10px rgba(69,90,100,0.2); transition: 0.2s;
+        }
+        .est-trigger-btn:active { transform: scale(0.95); }
+
+        /* 估算面板優化 */
+        .estimation-panel {
+            background: #f1f8e9; border: 2px dashed #81c784; border-radius: 14px;
+            padding: 18px; margin-bottom: 25px; display: none; animation: fadeIn 0.4s;
+        }
+        .est-title { font-weight: 900; color: #2e7d32; margin-bottom: 12px; font-size: 16px;}
+        .habitus-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 12px 0; }
+        .habitus-btn { padding: 10px 0; font-size: 14px; font-weight: bold; border: 1px solid #c8e6c9; border-radius: 8px; background: white; color: #388e3c; cursor: pointer; text-align: center; transition: 0.2s;}
+        .habitus-btn.active { background: #4caf50; color: white; border-color: #388e3c; box-shadow: 0 4px 8px rgba(76,175,80,0.3);}
+        #pawperResult { font-size: 15px; margin-top: 15px; padding: 12px; border-radius: 8px; text-align:center; font-weight:bold; background: #e0e0e0; color: #333; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); transition: 0.3s;}
+
+        /* 行動按鈕升級 */
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 15px; }
+        button.action-btn { 
+            padding: 16px 10px; font-size: 16px; font-weight: bold; color: white; 
+            background: linear-gradient(145deg, #546e7a, #37474f); border: none; border-radius: 12px; 
+            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: all 0.2s;
+        }
+        button.action-btn:active { transform: scale(0.96); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        button.ohca { background: linear-gradient(145deg, #424242, #000000); font-size: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        button.ohca:disabled { background: #eeeeee; color: #9e9e9e; cursor: not-allowed; box-shadow: none; transform: none; border: 1px solid #e0e0e0;}
+
+        /* 結果卡片升級 */
+        .result-box { background-color: #f3f8f5; padding: 20px; border-radius: 16px; border: 1px solid #a5d6a7; display: none; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(76,175,80,0.1);}
+        .result-title { font-size: 19px; font-weight: 900; margin-bottom: 15px; color: #1b5e20; border-bottom: 2px dashed #c8e6c9; padding-bottom: 10px;}
+        .drug-item { margin-bottom: 15px; font-size: 15px; background: white; padding: 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 6px solid #1976d2;}
+        .drug-name { font-weight: 900; color: #1a237e; font-size: 18px; margin-bottom: 10px;}
         .drug-dose { color: #d32f2f; font-weight: 900; font-size: 24px; display: inline-block; margin-right: 10px;}
         .drug-vol { color: #1565c0; font-weight: 900; font-size: 24px; }
-        .drug-note { font-size: 14px; color: #333; margin-top: 10px; background-color: #fff8e1; padding: 10px; border-radius: 6px; line-height: 1.6; border: 1px solid #ffecb3;}
+        .drug-note { font-size: 14.5px; color: #37474f; margin-top: 12px; background-color: #fff8e1; padding: 12px; border-radius: 8px; line-height: 1.6; border: 1px solid #ffecb3;}
         
-        .weight-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 25px; }
-        .weight-btn { padding: 14px 0; font-size: 17px; font-weight: bold; background-color: #f1f8e9; color: #33691e; border: 1px solid #c5e1a5; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.2s ease; box-shadow: 0 2px 0 #dcedc8;}
-        .weight-btn:active { background-color: #dcedc8; transform: translateY(2px); box-shadow: none; }
-        .weight-btn.selected { background: linear-gradient(145deg, #43a047, #2e7d32); color: white; border: none; box-shadow: 0 4px 8px rgba(46, 125, 50, 0.4); transform: scale(1.08); z-index: 2;}
+        .weight-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 25px; }
+        .weight-btn { padding: 16px 0; font-size: 17px; font-weight: bold; background-color: #f1f8e9; color: #33691e; border: 1px solid #c5e1a5; border-radius: 10px; cursor: pointer; text-align: center; transition: all 0.2s ease;}
+        .weight-btn.selected { background: linear-gradient(145deg, #43a047, #2e7d32); color: white; border: none; box-shadow: 0 6px 12px rgba(46, 125, 50, 0.4); transform: scale(1.08); z-index: 2;}
 
-        .epi-condition-btn { width: 100%; text-align: left; font-size: 14px; padding: 12px; margin-bottom: 8px; background: #f5f5f5; color: #333; border: 2px solid #cfd8dc; border-radius: 8px; cursor: pointer; line-height: 1.5; transition: 0.2s; font-weight: bold;}
+        /* 條件按鈕 (癲癇/發燒) */
+        .epi-condition-btn { width: 100%; text-align: left; font-size: 14.5px; padding: 14px; margin-bottom: 10px; background: #f5f5f5; color: #37474f; border: 2px solid #cfd8dc; border-radius: 10px; cursor: pointer; line-height: 1.5; transition: 0.2s; font-weight: bold;}
         .epi-condition-btn:active { transform: scale(0.98); }
-        .epi-selected { background: #e8f5e9; border-color: #4caf50; color: #1b5e20; }
-        .fever-btn { width: 100%; text-align: center; font-size: 16px; padding: 15px; margin-bottom: 8px; background: #ffebee; color: #c62828; border: 2px solid #ef9a9a; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;}
+        .epi-selected { background: #e8f5e9; border-color: #4caf50; color: #1b5e20; box-shadow: 0 4px 8px rgba(76,175,80,0.15);}
+        .fever-btn { width: 100%; text-align: center; font-size: 17px; padding: 16px; margin-bottom: 10px; background: #ffebee; color: #c62828; border: 2px solid #ef9a9a; border-radius: 10px; cursor: pointer; font-weight: 900; transition: 0.2s;}
         .fever-btn:active { transform: scale(0.98); }
-        .fever-selected { background: #d32f2f; color: white; border-color: #b71c1c; box-shadow: 0 4px 8px rgba(211,47,47,0.3);}
+        .fever-selected { background: #d32f2f; color: white; border-color: #b71c1c; box-shadow: 0 6px 12px rgba(211,47,47,0.3);}
 
-        .flow-container { background: #fff; padding: 15px; border-radius: 10px; border: 2px solid #b2dfdb; box-shadow: 0 2px 8px rgba(0,137,123,0.1); margin-top: 10px;}
-        .flow-header { text-align: center; font-size: 18px; font-weight: bold; color: #00695c; margin-bottom: 15px; border-bottom: 2px dashed #80cbc4; padding-bottom: 8px;}
-        .flow-step { background: #f5f5f5; padding: 10px 12px; margin-bottom: 5px; border-radius: 6px; border-left: 4px solid #00897b; font-size: 14px; color: #212121; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
-        .flow-arrow { text-align: center; color: #00897b; font-size: 16px; margin: 3px 0; font-weight: bold;}
+        /* 流程圖 */
+        .flow-container { background: #fff; padding: 18px; border-radius: 14px; border: 2px solid #b2dfdb; box-shadow: 0 4px 15px rgba(0,137,123,0.08); margin-top: 15px;}
+        .flow-header { text-align: center; font-size: 18px; font-weight: 900; color: #00695c; margin-bottom: 15px; border-bottom: 2px dashed #80cbc4; padding-bottom: 10px;}
+        .flow-step { background: #f5f5f5; padding: 12px; margin-bottom: 6px; border-radius: 8px; border-left: 5px solid #00897b; font-size: 14.5px; color: #263238; line-height: 1.5; font-weight: 500;}
+        .flow-arrow { text-align: center; color: #00897b; font-size: 18px; margin: 4px 0; font-weight: bold;}
         .warning-step { background: #fff3e0; border-left-color: #f57c00; }
         .danger-step { background: #ffebee; border-left-color: #d32f2f; }
-        .flow-split-2 { display: flex; gap: 8px; margin-top: 5px; }
-        .flow-split-3 { display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap;}
-        .flow-box { flex: 1; padding: 10px; border-radius: 6px; font-size: 13px; text-align: center; line-height: 1.4; border: 1px solid #ccc; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
-        .flow-box b { display: block; font-size: 14px; margin-bottom: 4px;}
+        .flow-split-2 { display: flex; gap: 10px; margin-top: 8px; }
+        .flow-split-3 { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;}
+        .flow-box { flex: 1; padding: 12px; border-radius: 8px; font-size: 13.5px; text-align: center; line-height: 1.5; border: 1px solid #ccc;}
+        .flow-box b { display: block; font-size: 15px; margin-bottom: 5px; font-weight: 900;}
         .box-good { background: #e8f5e9; border-color: #81c784; color: #1b5e20;}
         .box-warn { background: #fff8e1; border-color: #ffd54f; color: #f57f17;}
         .box-danger { background: #ffebee; border-color: #e57373; color: #b71c1c;}
-        .mrsopa-note { font-size: 12px; color: #546e7a; margin-top: 8px; padding: 8px; background: #eceff1; border-radius: 6px; line-height: 1.4;}
-        .ref-text { font-size: 12px; color: #78909c; margin-top: 8px; border-top: 1px solid #cfd8dc; padding-top: 8px;}
+        .mrsopa-note { font-size: 12.5px; color: #546e7a; margin-top: 10px; padding: 10px; background: #eceff1; border-radius: 8px; line-height: 1.5;}
         
-        ul.cpr-list { margin: 8px 0 0 0; padding-left: 20px; font-size: 15px; color: #333; line-height: 1.6; }
-        ul.cpr-list li { margin-bottom: 4px; }
+        ul.cpr-list { margin: 10px 0 0 0; padding-left: 22px; font-size: 15.5px; color: #37474f; line-height: 1.6; }
+        ul.cpr-list li { margin-bottom: 6px; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -119,46 +141,45 @@
                 <label for="weightInputPals">孩童體重 (kg)</label>
                 <input type="number" id="weightInputPals" placeholder="例如: 15" inputmode="decimal" step="any">
             </div>
-            <button class="est-trigger-btn" onclick="toggleEstimation()">❓ 估算</button>
+            <button class="est-trigger-btn" onclick="toggleEstimation()">📏 估算</button>
             <div class="input-field" style="flex: 1.5;">
                 <label for="ageInputPals">年齡 (歲)</label>
                 <input type="number" id="ageInputPals" placeholder="歲" inputmode="decimal" step="any" oninput="checkOhcaButtons()">
-                <div class="input-hint">(未滿1歲填 0)</div>
+                <div class="input-hint">(未滿1歲填0)</div>
             </div>
         </div>
 
         <div id="estimationPanel" class="estimation-panel">
             <div class="est-title">📏 Broselow / PAWPER 估算法</div>
-            <div class="input-field">
+            <div class="input-field" style="margin-bottom: 10px;">
                 <label>測量身高 (cm)</label>
                 <input type="number" id="heightInput" placeholder="輸入身高 (如 110)" oninput="runPawperEstimation()" inputmode="decimal" step="any">
             </div>
-            <label style="font-size: 13px; font-weight: bold; margin-top:10px; display:block;">評估體型 (Habitus)</label>
+            <label style="font-size: 14px; font-weight: bold; margin-top:10px; display:block; color: #455a64;">評估體型 (Habitus)</label>
             <div class="habitus-grid">
                 <button class="habitus-btn" onclick="selectHabitus(0.8, this)">瘦</button>
                 <button class="habitus-btn active" onclick="selectHabitus(1.0, this)">正常</button>
                 <button class="habitus-btn" onclick="selectHabitus(1.2, this)">胖</button>
                 <button class="habitus-btn" onclick="selectHabitus(1.4, this)">極胖</button>
             </div>
-            <div id="pawperResult" style="font-size: 14px; margin-top: 10px; padding: 10px; border-radius: 5px; text-align:center; font-weight:bold; background: #e0e0e0; color: #333;">
+            <div id="pawperResult">
                 請輸入身高以計算...
             </div>
         </div>
 
         <div class="btn-grid">
-            <button id="btnOhcaInfant" class="action-btn ohca" onclick="calculatePals('OHCA_嬰兒')">OHCA 嬰兒<br><span style="font-size:13px; font-weight:normal;">(1歲以下)</span></button>
-            <button id="btnOhcaChild" class="action-btn ohca" onclick="calculatePals('OHCA_小兒')">OHCA 小兒<br><span style="font-size:13px; font-weight:normal;">(1歲~青春期)</span></button>
-            
-            <button class="action-btn" style="background: linear-gradient(145deg, #fb8c00, #ef6c00);" onclick="calculatePals('嚴重過敏')">嚴重過敏</button>
+            <button id="btnOhcaInfant" class="action-btn ohca" onclick="calculatePals('OHCA_嬰兒')">OHCA 嬰兒<br><span style="font-size:13px; font-weight:normal; margin-top:2px;">(1歲以下)</span></button>
+            <button id="btnOhcaChild" class="action-btn ohca" onclick="calculatePals('OHCA_小兒')">OHCA 小兒<br><span style="font-size:13px; font-weight:normal; margin-top:2px;">(1歲~青春期)</span></button>
+            <button class="action-btn" style="background: linear-gradient(145deg, #f57c00, #e65100);" onclick="calculatePals('嚴重過敏')">嚴重過敏</button>
             <button class="action-btn" style="background: linear-gradient(145deg, #43a047, #2e7d32);" onclick="calculatePals('氣喘')">氣喘</button>
             <button class="action-btn" style="background: linear-gradient(145deg, #8e24aa, #6a1b9a);" onclick="calculatePals('癲癇')">癲癇</button>
-            <button class="action-btn" style="background: linear-gradient(145deg, #0277bd, #01579b);" onclick="calculatePals('低血糖')">低血糖</button>
-            <button class="action-btn" style="background: linear-gradient(145deg, #e53935, #c62828);" onclick="calculatePals('發燒')">發燒</button>
+            <button class="action-btn" style="background: linear-gradient(145deg, #0288d1, #01579b);" onclick="calculatePals('低血糖')">低血糖</button>
+            <button class="action-btn" style="background: linear-gradient(145deg, #e53935, #b71c1c);" onclick="calculatePals('發燒')">發燒</button>
         </div>
     </div>
 
     <div id="nrpSection" class="section">
-        <label>👉 請點選新生兒體重 (kg)：點選即自動計算</label>
+        <label style="font-weight: bold; color: #37474f; font-size: 15px; margin-bottom: 10px; display: block;">👉 請點選新生兒體重 (kg)：</label>
         <div id="resultBoxNrp" class="result-box">
             <div id="resultTitleNrp" class="result-title"></div>
             <div id="resultContentNrp"></div>
@@ -180,16 +201,16 @@
             </div>
             <div class="flow-arrow">⬇</div>
             <div class="flow-split-2">
-                <div class="flow-box box-good"><b>胸部有起伏</b>繼續 PPV 15下<br>(1下/秒)</div>
-                <div class="flow-box box-danger"><b>胸部沒起伏</b>使用 MR.SOPA，確定有起伏後 PPV 30下</div>
+                <div class="flow-box box-good"><b>胸部有起伏</b><br>繼續 PPV 15下<br>(1下/秒)</div>
+                <div class="flow-box box-danger"><b>胸部沒起伏</b><br>使用 MR.SOPA，確定有起伏後 PPV 30下</div>
             </div>
             <div class="mrsopa-note"><b>*MRSOPA：</b>面罩密合度、維持呼吸道通暢、抽吸口鼻分泌物、打開嬰兒嘴巴、BVM壓大力點、考慮使用進階呼吸道</div>
             <div class="flow-arrow">⬇</div>
             <div class="flow-step">6️⃣ 再次評估心跳</div>
             <div class="flow-split-3">
-                <div class="flow-box box-good" style="min-width: 25%;"><b>≥ 100 下</b>觀察</div>
-                <div class="flow-box box-warn" style="min-width: 25%;"><b>60~99 下</b>PPV<br>(1下/秒)</div>
-                <div class="flow-box box-danger" style="flex: 1; min-width: 40%;"><b>&lt; 60 下</b>CPR 3:1<br>(接100%氧氣，30循環重新評估)</div>
+                <div class="flow-box box-good" style="min-width: 25%;"><b>≥ 100 下</b><br>觀察</div>
+                <div class="flow-box box-warn" style="min-width: 25%;"><b>60~99 下</b><br>PPV<br>(1下/秒)</div>
+                <div class="flow-box box-danger" style="flex: 1; min-width: 40%;"><b>&lt; 60 下</b><br>CPR 3:1<br>(接100%氧氣，30循環重新評估)</div>
             </div>
         </div>
     </div>
@@ -233,33 +254,27 @@
         runPawperEstimation();
     }
 
-    // 🌟 年齡防呆：動態鎖定/解鎖 OHCA 按鈕
     function checkOhcaButtons() {
         const ageStr = document.getElementById('ageInputPals').value;
         const btnInfant = document.getElementById('btnOhcaInfant');
         const btnChild = document.getElementById('btnOhcaChild');
 
         if (ageStr === '') {
-            // 沒輸入年齡，全部解鎖
             btnInfant.disabled = false;
             btnChild.disabled = false;
         } else {
             const age = parseFloat(ageStr);
             if (age < 1) {
-                // 0 歲：只能按嬰兒，鎖定小兒
                 btnInfant.disabled = false;
                 btnChild.disabled = true;
             } else if (age === 1) {
-                // 1 歲：交界期，兩個都解鎖
                 btnInfant.disabled = false;
                 btnChild.disabled = false;
             } else {
-                // 大於 1 歲：只能按小兒，鎖定嬰兒
                 btnInfant.disabled = true;
                 btnChild.disabled = false;
             }
         }
-        // 如果有填資料，觸發自動計算
         autoCalcPals();
     }
 
@@ -271,6 +286,7 @@
             resDiv.innerHTML = "請輸入身高以計算...";
             resDiv.style.backgroundColor = "#e0e0e0";
             resDiv.style.color = "#333";
+            resDiv.style.textShadow = "none";
             return;
         }
 
@@ -278,10 +294,10 @@
             resDiv.innerHTML = "🚨 <b>身高超過 150 cm！</b><br>已超出兒童量尺範圍，建議使用成人指引。";
             resDiv.style.backgroundColor = "#ffebee";
             resDiv.style.color = "#c62828";
+            resDiv.style.textShadow = "none";
             document.getElementById('weightInputPals').value = '';
             document.getElementById('ageInputPals').value = '';
             document.getElementById('resultBox').style.display = 'none';
-            // 觸發防呆檢查，恢復按鈕狀態
             checkOhcaButtons();
             return;
         }
@@ -291,12 +307,13 @@
         
         resDiv.style.backgroundColor = zone.bg;
         resDiv.style.color = (zone.bg === "#ffffff" || zone.bg === "#ffd600") ? "black" : "white";
-        resDiv.innerHTML = `Broselow 區域：${zone.color} <br> 預估體重：<b>${estimatedWeight} kg</b>`;
+        // 增強字體對比度
+        resDiv.style.textShadow = (zone.bg === "#ffffff" || zone.bg === "#ffd600") ? "none" : "0 1px 3px rgba(0,0,0,0.4)";
+        resDiv.innerHTML = `Broselow 區域：${zone.color} <br> 預估體重：<span style="font-size:18px;">${estimatedWeight} kg</span>`;
 
         document.getElementById('weightInputPals').value = estimatedWeight;
         document.getElementById('ageInputPals').value = zone.age;
         
-        // 🌟 估算完年齡後，立刻執行一次防呆檢查
         checkOhcaButtons();
     }
 
@@ -424,11 +441,11 @@
         const ageStr = document.getElementById('ageInputPals').value;
 
         if (weightStr === '' || parseFloat(weightStr) <= 0) {
-            alert('🚨 嗶嗶！請先輸入正確的孩童體重！\n(如果不知道體重，可點選「❓ 估算」按鈕測量身高喔！)');
+            alert('🚨 嗶嗶！請先輸入正確的孩童體重！\n(如果不知道體重，可點選「📏 估算」按鈕測量身高喔！)');
             return;
         }
         if (ageStr === '' || parseFloat(ageStr) < 0) {
-            alert('🚨 嗶嗶！請輸入孩童年齡！(未滿1歲請輸入 0)\n(如果不確定，可點選「❓ 估算」讓系統幫您抓大約歲數喔！)');
+            alert('🚨 嗶嗶！請輸入孩童年齡！(未滿1歲請輸入 0)\n(如果不確定，可點選「📏 估算」讓系統幫您抓大約歲數喔！)');
             return;
         }
         
@@ -488,10 +505,10 @@
             html += `
             <div class="flow-container" style="border-color: #d32f2f; margin-bottom:15px; background: #ffebee;">
                 <div class="flow-header" style="color: #b71c1c; border-bottom-color: #ef9a9a; font-size:16px;">🚨 體重超標 / 建議切換成人指引</div>
-                <div style="font-size: 14px; margin-bottom: 8px; color: #333; text-align: left; line-height: 1.5;">
+                <div style="font-size: 14.5px; margin-bottom: 8px; color: #263238; text-align: left; line-height: 1.5;">
                     此傷病患體重 (<b>${weight} kg</b>) 已達大型兒童或成人標準。請確認輸入是否有誤。<br><br>
                     若數值無誤，強烈建議直接依 <b>「成人急救指引 (ACLS/BLS)」</b> 處置。<br>
-                    <span style="color: #c62828; font-weight: bold;">※ 本系統已自動啟動防呆，將所有藥物與電擊焦耳數「強制鎖死在成人最大安全上限」。</span>
+                    <span style="color: #c62828; font-weight: 900;">※ 本系統已自動啟動防呆，將所有藥物與電擊焦耳數「強制鎖死在成人最大安全上限」。</span>
                 </div>
             </div>
             `;
@@ -509,12 +526,12 @@
             </div>`;
             html += `<div class="drug-item" style="border-left-color: #ff9800;">
                 <div class="drug-name">⚡ 電擊 (2J / 4J / Max 10J)</div>
-                <div>首發: <span class="drug-dose">${j1} J</span> | 次發: <span class="drug-dose">${j2} J</span> | 最大: <span class="drug-dose">${jMax} J</span></div>
+                <div style="font-size: 15px;">首發: <span class="drug-dose">${j1} J</span> | 次發: <span class="drug-dose">${j2} J</span> | 最大: <span class="drug-dose">${jMax} J</span></div>
             </div>`;
             let lma = getLMA(weight);
             html += `<div class="drug-item" style="border-left-color: #9c27b0;">
                 <div class="drug-name">🌬️ LMA 型號判斷</div>
-                <div>建議: <span class="drug-dose" style="color:#9c27b0;">Size ${lma.size}</span> (充氣 ${lma.cuff} cc)</div>
+                <div style="font-size: 15px;">建議: <span class="drug-dose" style="color:#9c27b0;">Size ${lma.size}</span> (充氣 ${lma.cuff} cc)</div>
                 <div class="drug-note">置入後通氣速率: <b>2~3秒/一口氣</b></div>
             </div>`;
         }
@@ -523,7 +540,7 @@
             html += `
             <div class="flow-container" style="border-color: #8e24aa; margin-bottom:15px;">
                 <div class="flow-header" style="color: #6a1b9a; border-bottom-color: #ce93d8;">⚠️ 癲癇重積狀態 (SE) 評估</div>
-                <div style="font-size: 14px; margin-bottom: 12px; color: #d32f2f; font-weight: bold;">請確認傷病患是否符合以下任一條件 (點擊確認)：</div>
+                <div style="font-size: 15px; margin-bottom: 12px; color: #d32f2f; font-weight: 900;">請確認傷病患是否符合以下任一條件 (點擊確認)：</div>
                 <button class="epi-condition-btn" onclick="confirmCondition(this, 'epilepsyDrugsBox')">一、全身抽搐且意識改變，連續超過 5 分鐘</button>
                 <button class="epi-condition-btn" onclick="confirmCondition(this, 'epilepsyDrugsBox')">二、在 5 分鐘內有 2 次發作，且停止抽搐期間意識未能恢復至平時或正常意識狀態</button>
             </div>
@@ -535,7 +552,7 @@
             html += `
             <div class="flow-container" style="border-color: #e53935; margin-bottom:15px; background: #fff8f8;">
                 <div class="flow-header" style="color: #c62828; border-bottom-color: #ef9a9a;">🌡️ 體溫評估</div>
-                <div style="font-size: 14px; margin-bottom: 12px; color: #333; text-align: center;">請確認孩童的耳溫或肛溫是否達到給藥標準？</div>
+                <div style="font-size: 15px; margin-bottom: 15px; color: #263238; text-align: center; font-weight: bold;">請確認孩童的耳溫或肛溫是否達到給藥標準？</div>
                 <button class="fever-btn" onclick="confirmCondition(this, 'feverDrugsBox')">⚠️ 耳溫或肛溫 ≥ 39°C</button>
             </div>
             <div id="feverDrugsBox" style="display: none; animation: fadeIn 0.5s;">
@@ -579,12 +596,12 @@
 
                 let combinedDoseVol = [doseHtml, volHtml].filter(Boolean).join('<br>');
                 if(combinedDoseVol) {
-                    doseContainerHtml = `<div style="margin-top: 8px; background: #f5f5f5; padding: 10px; border-radius: 6px; border-left: 4px solid #9e9e9e;">${combinedDoseVol}</div>`;
+                    doseContainerHtml = `<div style="margin-top: 10px; background: #f8f9fa; padding: 14px; border-radius: 8px; border-left: 5px solid #90caf9;">${combinedDoseVol}</div>`;
                 }
             }
 
             let noteContent = typeof drug.note === 'function' ? drug.note(weight, age) : drug.note;
-            html += `<div class="drug-item"><div class="drug-name">💊 ${drug.name}</div><div>途徑: <b>${drug.route}</b></div>${doseContainerHtml}<div class="drug-note">📝 備註:<br> ${noteContent}</div></div>`;
+            html += `<div class="drug-item"><div class="drug-name">💊 ${drug.name}</div><div style="font-size: 15px;">途徑: <b>${drug.route}</b></div>${doseContainerHtml}<div class="drug-note">📝 備註:<br> ${noteContent}</div></div>`;
         });
 
         if (data.isEpilepsy || data.isFever) { html += `</div>`; }
