@@ -106,12 +106,12 @@
         <div class="input-group">
             <div class="input-field" style="flex: 2;">
                 <label for="weightInputPals">孩童體重 (kg)</label>
-                <input type="number" id="weightInputPals" placeholder="例如: 15" inputmode="decimal">
+                <input type="number" id="weightInputPals" placeholder="例如: 15" inputmode="decimal" step="any">
             </div>
             <button class="est-trigger-btn" onclick="toggleEstimation()">❓ 估算</button>
             <div class="input-field" style="flex: 1.5;">
                 <label for="ageInputPals">年齡 (歲)</label>
-                <input type="number" id="ageInputPals" placeholder="歲" inputmode="decimal">
+                <input type="number" id="ageInputPals" placeholder="歲" inputmode="decimal" step="any">
                 <div class="input-hint">(未滿1歲填 0)</div>
             </div>
         </div>
@@ -120,7 +120,7 @@
             <div class="est-title">📏 Broselow / PAWPER 估算法</div>
             <div class="input-field">
                 <label>測量身高 (cm)</label>
-                <input type="number" id="heightInput" placeholder="輸入身高 (如 110)" oninput="runPawperEstimation()" inputmode="decimal">
+                <input type="number" id="heightInput" placeholder="輸入身高 (如 110)" oninput="runPawperEstimation()" inputmode="decimal" step="any">
             </div>
             <label style="font-size: 13px; font-weight: bold; margin-top:10px; display:block;">評估體型 (Habitus)</label>
             <div class="habitus-grid">
@@ -206,7 +206,13 @@
 
     function toggleEstimation() {
         const panel = document.getElementById('estimationPanel');
-        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        if (panel.style.display === 'block') {
+            panel.style.display = 'none';
+        } else {
+            panel.style.display = 'block';
+            // 🌟 貼心優化：展開面板後自動聚焦身高輸入框，直接彈出手機鍵盤
+            setTimeout(() => document.getElementById('heightInput').focus(), 100);
+        }
     }
 
     function selectHabitus(multiplier, btn) {
@@ -238,12 +244,15 @@
         autoCalcPals();
     }
 
+    // 🌟 LMA 尺寸擴展：補齊成人尺碼，以防大型兒童需求
     function getLMA(weight) {
         if (weight <= 5) return { size: "1", cuff: "5", range: "小於 5 kg" };
         if (weight <= 10) return { size: "1½", cuff: "8", range: "5 - 10 kg" };
         if (weight <= 20) return { size: "2", cuff: "12", range: "10 - 20 kg" };
         if (weight <= 30) return { size: "2½", cuff: "20", range: "20 - 30 kg" };
-        return { size: "3", cuff: "30", range: "30 - 50 kg" };
+        if (weight <= 50) return { size: "3", cuff: "30", range: "30 - 50 kg" };
+        if (weight <= 70) return { size: "4", cuff: "30", range: "50 - 70 kg" };
+        return { size: "5", cuff: "40", range: "大於 70 kg" };
     }
 
     const ohcaDrugs = [
@@ -422,7 +431,6 @@
         document.getElementById('resultTitle').innerText = `👦 狀況：${conditionKey.replace('OHCA_', 'OHCA ')} | 體重: ${weight} kg | 年齡: ${age} 歲`;
         let html = '';
 
-        // 🌟 智慧成人體型防呆警告
         if (weight >= 40) {
             html += `
             <div class="flow-container" style="border-color: #d32f2f; margin-bottom:15px; background: #ffebee;">
@@ -437,14 +445,16 @@
         }
 
         if (data.isAdvanced) {
-            // 🌟 修正：電擊焦耳數獨立強制限縮最大值為 200J
             let j1 = Math.min(weight * 2, 200);
             let j2 = Math.min(weight * 4, 200);
             let jMax = Math.min(weight * 10, 200);
 
+            // 🌟 AED 智慧判斷：超過 25 公斤改用成人貼片方式
+            let aedInstruction = weight >= 25 ? "右上左下貼 (成人貼片)" : data.cpr.aed;
+
             html += `<div class="drug-item" style="border-left-color: #e91e63;">
                 <div class="drug-name">🫀 CPR 指引</div>
-                <ul class="cpr-list"><li><b>姿勢：</b>${data.cpr.posture}</li><li><b>深度：</b>${data.cpr.depth}</li><li><b>AED：</b>${data.cpr.aed}</li><li><b>比例：</b>${data.cpr.ratio}</li></ul>
+                <ul class="cpr-list"><li><b>姿勢：</b>${data.cpr.posture}</li><li><b>深度：</b>${data.cpr.depth}</li><li><b>AED：</b>${aedInstruction}</li><li><b>比例：</b>${data.cpr.ratio}</li></ul>
             </div>`;
             html += `<div class="drug-item" style="border-left-color: #ff9800;">
                 <div class="drug-name">⚡ 電擊 (2J / 4J / Max 10J)</div>
