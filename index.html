@@ -210,7 +210,6 @@
             panel.style.display = 'none';
         } else {
             panel.style.display = 'block';
-            // 🌟 貼心優化：展開面板後自動聚焦身高輸入框，直接彈出手機鍵盤
             setTimeout(() => document.getElementById('heightInput').focus(), 100);
         }
     }
@@ -225,10 +224,23 @@
     function runPawperEstimation() {
         const h = parseFloat(document.getElementById('heightInput').value);
         const resDiv = document.getElementById('pawperResult');
+        
         if (!h) {
             resDiv.innerHTML = "請輸入身高以計算...";
             resDiv.style.backgroundColor = "#e0e0e0";
             resDiv.style.color = "#333";
+            return;
+        }
+
+        // 🌟 超出 Broselow 量尺極限（大於 150 cm）的防呆阻斷
+        if (h > 150) {
+            resDiv.innerHTML = "🚨 <b>身高超過 150 cm！</b><br>已超出兒童量尺範圍，建議使用成人指引。";
+            resDiv.style.backgroundColor = "#ffebee";
+            resDiv.style.color = "#c62828";
+            // 阻斷計算，並清空下方數值以免同仁誤按
+            document.getElementById('weightInputPals').value = '';
+            document.getElementById('ageInputPals').value = '';
+            document.getElementById('resultBox').style.display = 'none';
             return;
         }
 
@@ -244,7 +256,6 @@
         autoCalcPals();
     }
 
-    // 🌟 LMA 尺寸擴展：補齊成人尺碼，以防大型兒童需求
     function getLMA(weight) {
         if (weight <= 5) return { size: "1", cuff: "5", range: "小於 5 kg" };
         if (weight <= 10) return { size: "1½", cuff: "8", range: "5 - 10 kg" };
@@ -436,7 +447,7 @@
             <div class="flow-container" style="border-color: #d32f2f; margin-bottom:15px; background: #ffebee;">
                 <div class="flow-header" style="color: #b71c1c; border-bottom-color: #ef9a9a; font-size:16px;">🚨 體重超標 / 建議切換成人指引</div>
                 <div style="font-size: 14px; margin-bottom: 8px; color: #333; text-align: left; line-height: 1.5;">
-                    此傷病患體重 (<b>${weight} kg</b>) 已達大型兒童或成人標準。請確認輸入是否有誤（如：誤將體重填為身高）。<br><br>
+                    此傷病患體重 (<b>${weight} kg</b>) 已達大型兒童或成人標準。請確認輸入是否有誤。<br><br>
                     若數值無誤，強烈建議直接依 <b>「成人急救指引 (ACLS/BLS)」</b> 處置。<br>
                     <span style="color: #c62828; font-weight: bold;">※ 本系統已自動啟動防呆，將所有藥物與電擊焦耳數「強制鎖死在成人最大安全上限」。</span>
                 </div>
@@ -448,8 +459,6 @@
             let j1 = Math.min(weight * 2, 200);
             let j2 = Math.min(weight * 4, 200);
             let jMax = Math.min(weight * 10, 200);
-
-            // 🌟 AED 智慧判斷：超過 25 公斤改用成人貼片方式
             let aedInstruction = weight >= 25 ? "右上左下貼 (成人貼片)" : data.cpr.aed;
 
             html += `<div class="drug-item" style="border-left-color: #e91e63;">
